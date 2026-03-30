@@ -71,12 +71,12 @@
 Защита:
 - `Basic Auth` через `middleware.ts`
 
-Текущее временное значение логина:
-- username: `ainur`
-- password: `change-me-now`
+Логин/пароль задаются через переменные окружения:
+- `ADMIN_USERNAME`
+- `ADMIN_PASSWORD`
 
 Важно:
-- пароль временный, его надо сменить
+- задайте надёжный пароль в Vercel Environment Variables
 
 ### Отдельный слой концепта
 
