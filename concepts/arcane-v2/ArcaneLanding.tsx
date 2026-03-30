@@ -226,9 +226,9 @@ export default function ArcaneLanding() {
         <div className={styles.heroLeft}>
           <div className={styles.heroBadge}>Digital & AI Forge</div>
           <h1>
-            Процессы на ручном
+            Нет меча? Выкую.
             <br />
-            приводе? <span className={styles.accent}>Серьёзно?</span>
+            Затупился? <span className={styles.accent}>Перекую и зачарую ИИ.</span>
           </h1>
 
           <p className={styles.heroDescription}>
