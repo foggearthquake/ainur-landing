@@ -7,7 +7,7 @@ import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "@/lib/db/schema";
 
 function resolveDatabaseUrl() {
-  const configured = process.env.DATABASE_URL;
+  const configured = process.env.DATABASE_URL?.trim();
 
   if (!configured) {
     const defaultPath = join(process.cwd(), "data", "leads.db");
@@ -35,7 +35,7 @@ const url = resolveDatabaseUrl();
 
 const client = createClient({
   url,
-  authToken: process.env.TURSO_AUTH_TOKEN,
+  authToken: process.env.TURSO_AUTH_TOKEN?.trim(),
 });
 
 export const db = drizzle(client, { schema });
