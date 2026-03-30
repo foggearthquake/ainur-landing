@@ -1,4 +1,4 @@
-import { answerFromKnowledgeBase } from "@/lib/assistant-knowledge";
+import { askLLM } from "@/lib/assistant-knowledge";
 import { createLead } from "@/lib/db/repository";
 import {
   clearTelegramSession,
@@ -140,14 +140,12 @@ async function completeLead(session: TelegramAssistantSession, message: Telegram
 
 async function handleLeadMode(session: TelegramAssistantSession, message: TelegramMessage, text: string) {
   if (isQuestion(text)) {
-    const kbAnswer = answerFromKnowledgeBase(text);
-    if (kbAnswer) {
-      await sendTelegramMessage(
-        message.chat.id,
-        `${kbAnswer}\n\nПродолжим заявку.\n${getCurrentQuestion(session.stepIndex)}`,
-      );
-      return;
-    }
+    const kbAnswer = await askLLM(text);
+    await sendTelegramMessage(
+      message.chat.id,
+      `${kbAnswer}\n\nПродолжим заявку.\n${getCurrentQuestion(session.stepIndex)}`,
+    );
+    return;
   }
 
   const current = leadQuestions[session.stepIndex];
@@ -170,9 +168,7 @@ async function handleLeadMode(session: TelegramAssistantSession, message: Telegr
 }
 
 async function handleQuestionMode(message: TelegramMessage, text: string) {
-  const kbAnswer =
-    answerFromKnowledgeBase(text) ||
-    "Я пока отвечаю по встроенной базе знаний о форматах работы, типах решений и процессе. Могу подсказать про n8n-автоматизации, RAG, Telegram-ботов, API-интеграции и запуск AI-решений.";
+  const kbAnswer = await askLLM(text);
 
   await sendTelegramMessage(
     message.chat.id,
