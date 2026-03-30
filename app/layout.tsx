@@ -9,15 +9,16 @@ const DOMAIN = "https://gabdra.pw";
 export const metadata: Metadata = {
   metadataBase: new URL(DOMAIN),
   title: {
-    default: "ainur. — AI Forge | Автоматизации, RAG, AI-агенты для бизнеса",
+    default: "ainur. — Digital & AI Forge | Сайты, автоматизации, платформы за 3–7 дней",
     template: "%s | ainur.",
   },
   description:
-    "Кую AI-решения для бизнеса: автоматизации на n8n, RAG-системы, Telegram-боты, API-интеграции, AI-агенты. От 15 000 ₽. Первый разговор бесплатный.",
+    "Любые цифровые решения: сайты, лендинги, Telegram-боты, автоматизации, платформы, RAG-системы, AI-агенты. Рабочий результат за 3–7 дней. От 15 000 ₽.",
   keywords: [
+    "сайт на заказ", "лендинг на заказ", "разработка сайтов", "веб-приложение",
     "AI автоматизация", "RAG система", "Telegram бот на заказ", "n8n автоматизация",
     "AI агенты", "автоматизация бизнес-процессов", "интеграция CRM",
-    "чат-бот для бизнеса", "AI решения", "ainur", "разработка ботов",
+    "чат-бот для бизнеса", "цифровые решения", "ainur", "платформа на заказ",
   ],
   authors: [{ name: "ainur.", url: DOMAIN }],
   creator: "ainur.",
@@ -26,14 +27,14 @@ export const metadata: Metadata = {
     locale: "ru_RU",
     url: DOMAIN,
     siteName: "ainur.",
-    title: "ainur. — AI Forge | Автоматизации, RAG, AI-агенты",
+    title: "ainur. — Digital & AI Forge | Сайты, автоматизации, платформы",
     description:
-      "Кую AI-решения: автоматизации, RAG, боты, интеграции. От 15 000 ₽. Работает — или переделываю.",
+      "Любые цифровые решения за 3–7 дней: сайты, боты, автоматизации, платформы, AI-системы. От 15 000 ₽.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ainur. — AI Forge",
-    description: "AI-автоматизации, RAG-системы, боты и интеграции для бизнеса",
+    title: "ainur. — Digital & AI Forge",
+    description: "Сайты, автоматизации, платформы, AI-системы — рабочий результат за 3–7 дней",
   },
   robots: {
     index: true,

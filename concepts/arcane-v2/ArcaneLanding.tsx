@@ -2,17 +2,22 @@ import LeadForm from "@/app/LeadForm";
 import TerminalMock from "./TerminalMock";
 import HexParticles from "./HexParticles";
 import ScrollReveal from "./ScrollReveal";
-import { Settings, SearchCode, Link, ShieldCheck, Send, GitBranch } from "lucide-react";
+import { Settings, SearchCode, Link, ShieldCheck, Send, GitBranch, Globe } from "lucide-react";
 import styles from "./arcane-v2.module.css";
 
 /* ── Data ── */
 
 const tickerItems = [
+  "сайты и лендинги",
+  "платформы",
   "n8n-автоматизации",
   "RAG-системы",
   "API-интеграции",
   "AI-агенты",
   "Telegram-боты",
+  "веб-приложения",
+  "парсинг и аналитика",
+  "до 7 дней",
   "цифровые решения",
   "поддержка после запуска",
 ];
@@ -22,33 +27,41 @@ const heroStats = [
   { value: "RAG", label: "базы знаний" },
   { value: "API", label: "интеграции" },
   { value: "AI", label: "агенты" },
+  { value: "3–7", label: "дней до результата" },
 ];
 
 const serviceCards = [
   {
-    icon: <Settings size={24} />,
+    icon: <Globe size={24} />,
     number: "01",
+    title: "Сайты, платформы и веб-приложения",
+    description: "Лендинги, многостраничники, личные кабинеты, дашборды, внутренние инструменты для команд. Под ключ.",
+    tags: ["Next.js", "React", "UI/UX", "Fullstack"],
+  },
+  {
+    icon: <Settings size={24} />,
+    number: "02",
     title: "Автоматизации",
     description: "Рутина? Забирает бот. Заявки, уведомления, синхронизация — на автопилоте.",
     tags: ["n8n", "Telegram", "CRM", "Webhook"],
   },
   {
     icon: <SearchCode size={24} />,
-    number: "02",
+    number: "03",
     title: "RAG и ассистенты",
     description: "Документы, регламенты, база знаний — в одном чате. Спроси — ответит по делу.",
     tags: ["RAG", "Docs", "Search", "LLM"],
   },
   {
     icon: <Link size={24} />,
-    number: "03",
+    number: "04",
     title: "API-интеграции",
     description: "CRM не видит бота? Бот не знает базу? Связываю. Всё. Со всем.",
     tags: ["API", "Webhook", "Backend", "Postgres"],
   },
   {
     icon: <ShieldCheck size={24} />,
-    number: "04",
+    number: "05",
     title: "AI-системы под ключ",
     description: "Полный контур: интерфейс, логика, данные, продакшн. Одна система — работает.",
     tags: ["LLM", "Product", "Infra", "Support"],
@@ -92,8 +105,8 @@ const caseCards = [
 
 const comparisonRows = [
   { label: "Архитектура проекта", ainur: "да", freelancer: "иногда", agency: "да" },
-  { label: "Глубина в AI-стеке", ainur: "глубокая", freelancer: "по-разному", agency: "поверхностная" },
-  { label: "Скорость старта", ainur: "дни", freelancer: "дни", agency: "недели" },
+  { label: "Глубина в digital/AI", ainur: "глубокая", freelancer: "по-разному", agency: "поверхностная" },
+  { label: "Скорость старта", ainur: "3–7 дней", freelancer: "дни–недели", agency: "недели–месяцы" },
   { label: "Поддержка после", ainur: "да", freelancer: "нет", agency: "по договору" },
   { label: "Прозрачность", ainur: "полная", freelancer: "по-разному", agency: "отчёты" },
   { label: "Стоимость", ainur: "от 15к", freelancer: "от 5к", agency: "от 300к" },
@@ -102,7 +115,7 @@ const comparisonRows = [
 const processSteps = [
   { number: "01", title: "Разбор", description: "Разбираю задачу. Не хотелки — процесс." },
   { number: "02", title: "Схема", description: "Архитектура. До первой строчки кода." },
-  { number: "03", title: "Сборка", description: "Рабочая система. Не прототип, не макет." },
+  { number: "03", title: "Сборка", description: "Рабочее решение за 3–7 дней. Сложная задача? За 7 дней согласуем решение и стартуем." },
   { number: "04", title: "Поддержка", description: "Не исчезаю. Правлю. Развиваю." },
 ];
 
@@ -122,6 +135,8 @@ const whyCards = [
 ];
 
 const priceHighlights = [
+  "Сайт или лендинг",
+  "Платформа / веб-приложение",
   "Бот + пара интеграций",
   "Telegram + CRM + webhook",
   "RAG-система, база знаний",
@@ -130,12 +145,16 @@ const priceHighlights = [
 
 const faqItems = [
   {
-    question: "Только чат-боты?",
-    answer: "Не-а. Автоматизации, RAG, интеграции, AI-агенты — формат под задачу. Бот — просто один из инструментов.",
+    question: "Только AI и боты?",
+    answer: "Нет. Сайты, лендинги, платформы, веб-приложения, автоматизации, RAG, интеграции, AI-агенты — любой цифровой формат под задачу.",
+  },
+  {
+    question: "Как быстро будет готово?",
+    answer: "Простые задачи — 3–7 дней. Для сложных — за 7 дней согласуем решение и стартуем разработку.",
   },
   {
     question: "А если задача простая?",
-    answer: "Ещё лучше. Один бот, пара интеграций — запросто. Не обязательно строить космолёт, чтобы долететь до магазина.",
+    answer: "Ещё лучше. Лендинг, бот, пара интеграций — запросто. Не обязательно строить космолёт, чтобы долететь до магазина.",
   },
   {
     question: "Что после запуска?",
@@ -150,7 +169,7 @@ const faqItems = [
 /* ── Helpers ── */
 
 function cellClass(value: string) {
-  if (["да", "глубокая", "полная", "дни"].includes(value)) return styles.cellYes;
+  if (["да", "глубокая", "полная", "дни", "3–7 дней"].includes(value)) return styles.cellYes;
   if (value === "нет") return styles.cellNo;
   return styles.cellMaybe;
 }
@@ -205,7 +224,7 @@ export default function ArcaneLanding() {
         <div className={styles.heroBg} aria-hidden="true" />
 
         <div className={styles.heroLeft}>
-          <div className={styles.heroBadge}>AI Forge</div>
+          <div className={styles.heroBadge}>Digital & AI Forge</div>
           <h1>
             Процессы на ручном
             <br />
@@ -213,9 +232,9 @@ export default function ArcaneLanding() {
           </h1>
 
           <p className={styles.heroDescription}>
-            Кую цифровые решения, зачарованные AI-системами.
-            Автоматизации, агенты, RAG — всё, что экономит время и нервы.
-            Работает — или переделываю.
+            Кую любые цифровые решения: от сайтов и ботов до платформ.
+            Зачаровываю AI-системами или строю с нуля.
+            Рабочий результат — за 3–7 дней. Работает — или переделываю.
           </p>
 
           <div className={styles.heroActions}>
@@ -484,7 +503,7 @@ export default function ArcaneLanding() {
           ainur<span>.</span>
         </span>
         <div className={styles.footerLinks}>
-          <a href="#top">AI Forge</a>
+          <a href="#top">Digital & AI Forge</a>
           <a href="https://github.com/foggearthquake-star" target="_blank" rel="noreferrer">
             <GitBranch size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
             GitHub
