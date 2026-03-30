@@ -226,15 +226,14 @@ export default function ArcaneLanding() {
         <div className={styles.heroLeft}>
           <div className={styles.heroBadge}>Digital & AI Forge</div>
           <h1>
-            Нет меча? Выкую.
+            Цифровая кузница.
             <br />
-            Затупился? <span className={styles.accent}>Перекую и зачарую ИИ.</span>
+            Любое решение — <span className={styles.accent}>за 3–7 дней.</span>
           </h1>
 
           <p className={styles.heroDescription}>
-            Кую любые цифровые решения: от сайтов и ботов до платформ.
-            Зачаровываю AI-системами или строю с нуля.
-            Рабочий результат — за 3–7 дней. Работает — или переделываю.
+            Нет решения — выкую с нуля. Есть, но не работает — перекую.
+            ИИ подключу там, где усилит. Работает — или переделываю.
           </p>
 
           <div className={styles.heroActions}>
