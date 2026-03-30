@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ainur — ai-системы под ключ</title>
+<meta name="description" content="Внедряю AI-автоматизации: от простых n8n-триггеров до полноценных систем для крупных компаний.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --parch:    #f4efe2;
+  --parch2:   #ebe3d0;
+  --parch3:   #dfd5bf;
+  --stone:    #bdb4a0;
+  --stone2:   #948c7c;
+  --ink:      #23201a;
+  --ink2:     #352e22;
+  --ink3:     #4a4236;
+  --gold:     #a87c10;
+  --gold2:    #c89a20;
+  --gold3:    #e0bc50;
+  --gold-l:   #f2dfa0;
+  --gold-bg:  rgba(168,124,16,0.09);
+  --sage:     #4a7a58;
+  --sage2:    #3a6048;
+  --sage-bg:  rgba(74,122,88,0.08);
+  --rust:     #7a3418;
+  --border:   rgba(120,90,30,0.16);
+  --border2:  rgba(120,90,30,0.30);
+  --shadow:   rgba(30,24,14,0.14);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--parch);
+  color: var(--ink);
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.75;
+  overflow-x: hidden;
+}
+
+/* parchment grain */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:0;
+}
+
+/* ── nav ── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  padding:20px 56px;
+  display:flex; align-items:center; justify-content:space-between;
+  transition:all .4s;
+}
+nav.s {
+  background:rgba(244,239,226,.96);
+  border-bottom:1px solid var(--border2);
+  backdrop-filter:blur(14px);
+  padding:13px 56px;
+  box-shadow:0 2px 24px var(--shadow);
+}
+.logo { text-decoration:none; display:flex; flex-direction:column; }
+.logo-main {
+  font-family:'Cinzel', serif;
+  font-size:21px; font-weight:700;
+  letter-spacing:.28em;
+  color:var(--ink); line-height:1;
+  text-transform:lowercase;
+}
+nav .logo-main { color:rgba(255,255,255,0.92); }
+nav.s .logo-main { color:var(--ink); }
+.logo-main span { color:var(--gold3); }
+nav.s .logo-main span { color:var(--gold); }
+.logo-sub {
+  font-family:'Fira Code', monospace;
+  font-size:8px; letter-spacing:.18em; text-transform:lowercase;
+  color:rgba(255,255,255,0.4); margin-top:3px;
+}
+nav.s .logo-sub { color:var(--stone2); }
+
+.nav-r { display:flex; align-items:center; gap:36px; }
+.nav-links { display:flex; gap:30px; list-style:none; }
+.nav-links a {
+  font-family:'EB Garamond', serif;
+  font-size:15px; font-style:italic; letter-spacing:.04em;
+  color:rgba(255,255,255,.7); text-decoration:none; transition:color .2s;
+}
+nav.s .nav-links a { color:var(--ink3); }
+.nav-links a:hover { color:var(--gold3); }
+nav.s .nav-links a:hover { color:var(--gold); }
+
+.nav-cta {
+  font-family:'Cinzel', serif;
+  font-size:9px; font-weight:700; letter-spacing:.18em; text-transform:lowercase;
+  color:#fff; background:transparent;
+  padding:9px 22px; text-decoration:none;
+  border:1px solid rgba(255,255,255,.45); transition:all .25s;
+}
+nav.s .nav-cta { color:var(--ink); border-color:var(--border2); background:transparent; }
+.nav-cta:hover { background:var(--gold); border-color:var(--gold); color:#fff; }
+
+/* ── HERO with real photo ── */
+#hero {
+  min-height:100vh;
+  position:relative; overflow:hidden;
+  display:flex; align-items:flex-end;
+}
+.hero-bg {
+  position:absolute; inset:0;
+  background-image: url('hero.png');
+  background-size:cover; background-position:center top;
+  background-repeat:no-repeat;
+}
+/* layered overlay: bottom-heavy gradient + subtle overall dim */
+.hero-overlay {
+  position:absolute; inset:0;
+  background:
+    linear-gradient(to bottom,
+      rgba(20,16,10,0.12) 0%,
+      rgba(20,16,10,0.05) 30%,
+      rgba(20,16,10,0.45) 68%,
+      rgba(18,14,8,0.82) 100%
+    );
+}
+/* left-side text region gets extra darkening */
+.hero-overlay2 {
+  position:absolute; inset:0;
+  background: radial-gradient(ellipse 70% 60% at 18% 85%, rgba(10,8,4,0.5) 0%, transparent 70%);
+}
+
+.hero-content {
+  position:relative; z-index:2;
+  padding:0 60px 72px;
+  max-width:760px;
+}
+
+.hero-eyebrow {
+  display:inline-flex; align-items:center; gap:10px;
+  margin-bottom:22px;
+}
+.eyebrow-dot { width:6px; height:6px; background:var(--gold3); animation:pulse 2.2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.7)} }
+.eyebrow-text {
+  font-family:'Fira Code', monospace;
+  font-size:10px; letter-spacing:.16em; text-transform:lowercase;
+  color:rgba(255,255,255,.6);
+}
+.eyebrow-line { width:40px; height:1px; background:rgba(255,255,255,.25); }
+
+h1.hero-h1 {
+  font-family:'Cinzel', serif;
+  font-size:clamp(38px,6vw,82px);
+  font-weight:900; line-height:.95;
+  letter-spacing:.03em;
+  color:#fff; margin-bottom:10px;
+  text-transform:lowercase;
+}
+h1.hero-h1 em {
+  font-family:'EB Garamond', serif;
+  font-style:italic; font-weight:400;
+  font-size:.72em; letter-spacing:.04em;
+  color:rgba(255,255,255,.75);
+  display:block; margin-top:8px;
+  text-transform:none;
+}
+.hero-h1 .accent { color:var(--gold3); }
+
+.hero-rule {
+  width:180px; height:1px; margin:24px 0;
+  background:linear-gradient(90deg, var(--gold3), rgba(224,188,80,0));
+}
+
+.hero-desc {
+  font-size:17px; color:rgba(255,255,255,.78);
+  max-width:560px; line-height:1.85; margin-bottom:14px;
+}
+.hero-desc strong { color:rgba(255,255,255,.95); font-weight:500; }
+
+.hero-sub {
+  font-family:'Fira Code', monospace;
+  font-size:10px; color:rgba(255,255,255,.38); letter-spacing:.05em; text-transform:lowercase;
+  margin-bottom:38px; line-height:1.8;
+}
+
+.hero-btns { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:52px; }
+.btn-hero-main {
+  font-family:'Cinzel', serif;
+  font-size:10px; font-weight:700; letter-spacing:.2em; text-transform:lowercase;
+  color:var(--ink); background:var(--gold3);
+  padding:14px 32px; text-decoration:none;
+  display:inline-flex; align-items:center; gap:9px;
+  transition:all .2s; border:none; cursor:pointer; position:relative;
+}
+.btn-hero-main:hover { background:#fff; transform:translate(-1px,-1px); box-shadow:3px 3px 0 rgba(0,0,0,0.3); }
+.btn-hero-ghost {
+  font-family:'EB Garamond', serif;
+  font-size:16px; font-style:italic; letter-spacing:.06em;
+  color:rgba(255,255,255,.8); background:transparent;
+  padding:13px 26px; text-decoration:none;
+  display:inline-flex; align-items:center; gap:8px;
+  border:1px solid rgba(255,255,255,.3); transition:all .2s; cursor:pointer;
+}
+.btn-hero-ghost:hover { border-color:var(--gold3); color:var(--gold3); }
+
+/* proof strip in hero */
+.hero-proof {
+  display:flex; gap:0; flex-wrap:wrap;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(0,0,0,.28);
+  backdrop-filter:blur(6px);
+  max-width:480px;
+}
+.proof-item {
+  flex:1; min-width:100px; padding:16px 20px;
+  border-right:1px solid rgba(255,255,255,.1);
+}
+.proof-item:last-child { border-right:none; }
+.proof-val {
+  font-family:'Cinzel', serif;
+  font-size:26px; font-weight:700; color:var(--gold3); line-height:1; margin-bottom:3px;
+}
+.proof-lbl {
+  font-family:'Fira Code', monospace;
+  font-size:8px; color:rgba(255,255,255,.4); letter-spacing:.08em; text-transform:lowercase; line-height:1.5;
+}
+
+/* ── TICKER ── */
+.ticker {
+  background:var(--ink2); padding:10px 0; overflow:hidden;
+  border-top:1px solid rgba(224,188,80,.15);
+  border-bottom:1px solid rgba(224,188,80,.15);
+  position:relative; z-index:1;
+}
+.ticker-inner { display:flex; white-space:nowrap; animation:tick 38s linear infinite; }
+.ticker-item {
+  font-family:'Cinzel',serif; font-size:10px; font-weight:700; letter-spacing:.18em; text-transform:lowercase;
+  color:rgba(224,188,80,.65); padding:0 36px;
+  display:flex; align-items:center; gap:10px; flex-shrink:0;
+}
+.ticker-item::before { content:'◆'; font-size:7px; opacity:.4; }
+@keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* ── SECTIONS ── */
+.sec { padding:90px 60px; position:relative; z-index:1; }
+.sec-alt { background:var(--parch2); }
+.sec-stone { background:var(--parch3); }
+
+/* ornament divider */
+.div-orn {
+  text-align:center; padding:14px 0;
+  background:var(--parch2);
+  border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+  font-family:'Cinzel',serif; font-size:12px; letter-spacing:.5em;
+  color:var(--stone); user-select:none; position:relative; z-index:1;
+}
+
+.sec-eyebrow {
+  font-family:'Fira Code', monospace;
+  font-size:9px; font-weight:500; letter-spacing:.22em; text-transform:lowercase;
+  color:var(--gold); margin-bottom:10px;
+  display:flex; align-items:center; gap:12px;
+}
+.sec-eyebrow::before { content:'§'; font-family:'Cinzel',serif; font-size:13px; opacity:.45; }
+.sec-eyebrow::after { content:''; flex:0 0 32px; height:1px; background:var(--gold); opacity:.35; }
+
+.sec-h2 {
+  font-family:'Cinzel', serif;
+  font-size:clamp(24px,3.8vw,48px);
+  font-weight:700; letter-spacing:.06em;
+  text-transform:lowercase;
+  color:var(--ink); line-height:1.08; margin-bottom:10px;
+}
+.sec-sub {
+  font-size:16px; color:var(--ink3); max-width:540px;
+  line-height:1.8; font-style:italic;
+}
+.sec-header { margin-bottom:52px; }
+
+/* ── PAIN CARDS ── */
+.pain-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:18px; max-width:960px;
+}
+.pain-card {
+  background:rgba(255,255,255,0.58);
+  border:1px solid var(--border2);
+  padding:32px 26px;
+  position:relative; transition:all .28s;
+}
+.pain-card::before {
+  content:''; position:absolute; top:0; left:0; bottom:0; width:3px;
+  background:var(--gold2);
+}
+.pain-card:hover { background:#fff; transform:translateY(-4px); box-shadow:0 10px 36px var(--shadow); }
+.pain-icon { font-size:26px; margin-bottom:14px; display:block; }
+.pain-title {
+  font-family:'Cinzel', serif;
+  font-size:15px; font-weight:700; letter-spacing:.06em; text-transform:lowercase;
+  color:var(--ink); margin-bottom:10px;
+}
+.pain-text { font-size:14px; color:var(--ink3); line-height:1.78; }
+.pain-result {
+  margin-top:14px;
+  font-family:'Fira Code', monospace;
+  font-size:10px; color:var(--sage); letter-spacing:.04em; text-transform:lowercase;
+  background:var(--sage-bg); border:1px solid rgba(74,122,88,.2);
+  padding:6px 10px; display:inline-block; line-height:1.5;
+}
+.pain-result::before { content:'✦ '; }
+
+/* ── PROCESS BOARD ── */
+.process-board {
+  max-width:960px;
+  background:rgba(255,255,255,.48);
+  border:1px solid var(--border2); overflow:hidden;
+}
+.board-header {
+  background:var(--ink2);
+  padding:15px 24px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.board-title {
+  font-family:'Cinzel', serif;
+  font-size:10px; font-weight:700; letter-spacing:.22em; text-transform:lowercase;
+  color:var(--gold3);
+}
+.board-subtitle {
+  font-family:'Fira Code', monospace;
+  font-size:8px; color:rgba(255,255,255,.3); letter-spacing:.1em; text-transform:lowercase;
+}
+.board-tabs {
+  display:flex; border-bottom:1px solid var(--border2);
+  background:var(--parch2);
+}
+.board-tab {
+  flex:1; padding:14px 10px;
+  font-family:'Cinzel', serif;
+  font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:lowercase;
+  color:var(--stone2); text-align:center; cursor:pointer;
+  border-right:1px solid var(--border); transition:all .22s;
+  position:relative; display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.board-tab:last-child { border-right:none; }
+.board-tab.active { color:var(--gold); background:rgba(255,255,255,.65); }
+.board-tab.active::after {
+  content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px;
+  background:var(--gold);
+}
+.board-tab:hover:not(.active) { color:var(--ink); background:rgba(255,255,255,.35); }
+.tab-num {
+  width:20px; height:20px; border:1px solid currentColor;
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; flex-shrink:0;
+}
+.board-panel { display:none; padding:34px 30px; }
+.board-panel.active { display:block; }
+.panel-content { display:grid; grid-template-columns:1fr 1fr; gap:34px; align-items:start; }
+.panel-h {
+  font-family:'Cinzel', serif;
+  font-size:20px; font-weight:700; letter-spacing:.06em; text-transform:lowercase;
+  color:var(--ink); margin-bottom:12px;
+}
+.panel-sub { font-size:15px; color:var(--ink3); line-height:1.8; margin-bottom:18px; font-style:italic; }
+.panel-list { list-style:none; }
+.panel-list li {
+  padding:9px 0; border-bottom:1px solid var(--border);
+  font-size:14px; color:var(--ink3);
+  display:flex; gap:10px; align-items:flex-start; line-height:1.55;
+}
+.panel-list li:last-child { border-bottom:none; }
+.panel-list li::before { content:'◈'; color:var(--gold); font-size:10px; margin-top:3px; flex-shrink:0; }
+.panel-timeline {
+  background:var(--parch); border:1px solid var(--border); padding:20px;
+}
+.tl-title {
+  font-family:'Fira Code', monospace;
+  font-size:9px; letter-spacing:.14em; text-transform:lowercase;
+  color:var(--stone2); margin-bottom:16px;
+}
+.tl-item { display:flex; gap:14px; margin-bottom:16px; align-items:flex-start; }
+.tl-item:last-child { margin-bottom:0; }
+.tl-dot-wrap { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+.tl-dot { width:10px; height:10px; border:2px solid var(--gold); background:var(--parch); flex-shrink:0; }
+.tl-dot.filled { background:var(--gold); }
+.tl-line { width:1px; background:var(--border2); flex:1; min-height:18px; }
+.tl-text { font-size:13px; color:var(--ink3); line-height:1.6; }
+.tl-text strong { color:var(--ink); font-weight:600; }
+
+/* ── SERVICES ── */
+.svc-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:1px; background:var(--border2); max-width:960px;
+  border:1px solid var(--border2);
+}
+.svc {
+  background:var(--parch); padding:38px 34px;
+  position:relative; transition:background .25s; overflow:hidden;
+}
+.svc:hover { background:#fff; }
+.svc::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--gold),transparent);
+  opacity:0; transition:opacity .25s;
+}
+.svc:hover::after { opacity:1; }
+.svc-num {
+  font-family:'Cinzel', serif;
+  font-size:10px; letter-spacing:.18em; color:var(--stone); margin-bottom:14px;
+  display:flex; align-items:center; gap:8px; text-transform:lowercase;
+}
+.svc-num::after { content:''; flex:0 0 26px; height:1px; background:var(--border2); }
+.svc-title {
+  font-family:'Cinzel', serif;
+  font-size:18px; font-weight:700; letter-spacing:.06em; text-transform:lowercase;
+  color:var(--ink); margin-bottom:12px; line-height:1.25;
+}
+.svc-desc { font-size:14px; color:var(--ink3); line-height:1.8; margin-bottom:18px; }
+.svc-stack { display:flex; flex-wrap:wrap; gap:6px; }
+.svc-t {
+  font-family:'Fira Code', monospace;
+  font-size:8px; letter-spacing:.08em; text-transform:lowercase;
+  color:var(--stone2); border:1px solid var(--border2);
+  padding:3px 10px; background:var(--parch2);
+}
+
+/* ── CASES ── */
+.cases-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:18px; max-width:960px;
+}
+.case {
+  border:1px solid var(--border2); background:rgba(255,255,255,.5);
+  position:relative; overflow:hidden; transition:all .26s;
+}
+.case::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--gold); }
+.case:hover { background:#fff; transform:translateY(-4px); box-shadow:0 10px 38px var(--shadow); }
+.case-top {
+  padding:16px 20px 13px; border-bottom:1px solid var(--border);
+  display:flex; align-items:flex-start; justify-content:space-between;
+}
+.case-cat {
+  font-family:'Cinzel', serif;
+  font-size:8px; font-weight:700; letter-spacing:.14em; text-transform:lowercase;
+  color:var(--gold); border:1px solid var(--border2); padding:3px 10px;
+  background:var(--gold-bg);
+}
+.case-time { font-family:'Fira Code', monospace; font-size:9px; color:var(--stone); padding-top:3px; }
+.case-body { padding:18px 20px; }
+.case-title {
+  font-family:'Cinzel', serif;
+  font-size:15px; font-weight:700; letter-spacing:.05em; text-transform:lowercase;
+  color:var(--ink); margin-bottom:10px; line-height:1.3;
+}
+.case-problem { font-size:13px; color:var(--stone2); line-height:1.75; font-style:italic; margin-bottom:12px; }
+.case-result { font-size:13px; color:var(--ink3); line-height:1.78; margin-bottom:14px; }
+.case-result strong { color:var(--sage); font-weight:600; }
+.case-stack { display:flex; flex-wrap:wrap; gap:5px; }
+.case-t { font-family:'Fira Code', monospace; font-size:8px; color:var(--stone2); border:1px solid var(--border); padding:2px 8px; background:var(--parch2); text-transform:lowercase; }
+
+/* ── PRICING ── */
+.price-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; max-width:960px; }
+.pcard {
+  border:1px solid var(--border2); padding:34px 26px;
+  position:relative; overflow:hidden; transition:all .26s;
+  background:rgba(255,255,255,.42);
+}
+.pcard:hover { background:rgba(255,255,255,.82); box-shadow:0 8px 28px var(--shadow); }
+.pcard.feat { border-color:var(--gold2); background:rgba(255,255,255,.68); box-shadow:0 4px 18px rgba(168,124,16,.14); }
+.pcard.feat::before {
+  content:'популярный'; position:absolute; top:16px; right:-30px;
+  font-family:'Cinzel',serif; font-size:8px; font-weight:700;
+  letter-spacing:.14em; text-transform:lowercase; color:#fff;
+  background:var(--gold); padding:5px 42px; transform:rotate(45deg);
+}
+.pcard-name { font-family:'Cinzel', serif; font-size:22px; font-weight:700; letter-spacing:.08em; text-transform:lowercase; color:var(--ink); margin-bottom:4px; }
+.pcard-sub { font-family:'EB Garamond', monospace; font-size:13px; font-style:italic; color:var(--stone2); margin-bottom:16px; }
+.pcard-price { font-family:'Cinzel', serif; font-size:34px; font-weight:900; color:var(--gold); line-height:1; margin-bottom:4px; }
+.pcard-note { font-family:'Fira Code', monospace; font-size:9px; color:var(--stone2); margin-bottom:22px; text-transform:lowercase; }
+.pcard-hr { height:1px; background:var(--border2); margin-bottom:18px; }
+.pcard-list { list-style:none; margin-bottom:24px; }
+.pcard-list li { font-size:13px; color:var(--ink3); padding:7px 0; border-bottom:1px solid var(--border); display:flex; gap:10px; align-items:flex-start; line-height:1.55; }
+.pcard-list li:last-child { border-bottom:none; }
+.pcard-list li::before { content:'◈'; color:var(--gold); font-size:10px; margin-top:2px; flex-shrink:0; }
+.pcard-list li.note { color:var(--stone2); font-style:italic; }
+.pcard-list li.note::before { content:'◇'; }
+
+/* ── WHY ── */
+.why-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; max-width:960px; }
+.why {
+  background:rgba(255,255,255,.44); border:1px solid var(--border);
+  padding:34px 26px; transition:all .25s; position:relative; overflow:hidden;
+}
+.why:hover { background:#fff; box-shadow:0 6px 22px var(--shadow); }
+.why-glyph { font-family:'Cinzel', serif; font-size:52px; color:rgba(168,124,16,.1); line-height:1; margin-bottom:12px; font-weight:900; }
+.why-title { font-family:'Cinzel', serif; font-size:15px; font-weight:700; letter-spacing:.08em; text-transform:lowercase; color:var(--ink); margin-bottom:10px; }
+.why-text { font-size:13px; color:var(--ink3); line-height:1.82; }
+
+/* ── FAQ ── */
+.faq-wrap { display:grid; grid-template-columns:1fr 1.4fr; gap:76px; max-width:960px; align-items:start; }
+.faq-aside p { font-size:14px; color:var(--ink3); font-style:italic; margin-top:14px; line-height:1.8; }
+.faq-list { border-top:1px solid var(--border2); }
+.faq-item { border-bottom:1px solid var(--border); }
+.faq-q {
+  padding:18px 0; display:flex; justify-content:space-between; align-items:center;
+  cursor:pointer; gap:16px;
+  font-family:'EB Garamond', serif; font-size:16px; font-weight:500; color:var(--ink);
+  transition:color .2s; user-select:none;
+}
+.faq-q:hover { color:var(--gold); }
+.faq-ico {
+  width:22px; height:22px; border:1px solid var(--border2);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Cinzel',serif; font-size:13px; color:var(--stone);
+  flex-shrink:0; transition:all .25s;
+}
+.faq-item.open .faq-ico { background:var(--gold-bg); border-color:var(--gold); color:var(--gold); transform:rotate(45deg); }
+.faq-a { max-height:0; overflow:hidden; font-size:14px; color:var(--ink3); font-style:italic; line-height:1.82; transition:max-height .4s ease, padding .3s; }
+.faq-item.open .faq-a { max-height:220px; padding-bottom:20px; }
+
+/* ── CONTACT ── */
+.contact-grid { display:grid; grid-template-columns:1fr 1.15fr; gap:68px; max-width:960px; align-items:start; }
+.contact-info .sec-h2 { font-size:clamp(30px,5vw,56px); }
+.contact-info p { font-size:14px; color:var(--ink3); line-height:1.78; margin-bottom:20px; font-style:italic; }
+.promise-box {
+  border:1px solid rgba(74,122,88,.28); padding:15px 18px; margin-bottom:26px;
+  background:rgba(74,122,88,.05); position:relative;
+}
+.promise-box::before { content:''; position:absolute; top:0; left:0; bottom:0; width:3px; background:var(--sage); }
+.promise-box p { font-family:'Fira Code', monospace; font-size:10px; color:var(--sage); line-height:1.7; margin-bottom:4px; text-transform:lowercase; }
+.promise-box p::before { content:'✦ '; }
+.tg-btn {
+  display:inline-flex; align-items:center; gap:10px;
+  font-family:'Cinzel',serif; font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:lowercase;
+  color:#fff; background:var(--ink);
+  padding:13px 24px; text-decoration:none; transition:all .22s; border:1px solid var(--ink);
+}
+.tg-btn:hover { background:var(--gold); border-color:var(--gold); transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--ink2); }
+
+/* form */
+.form-scroll {
+  background:rgba(255,255,255,.52); border:1px solid var(--border2); padding:34px;
+  position:relative;
+}
+.form-scroll::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--gold),transparent); }
+.form-title { font-family:'Fira Code', monospace; font-size:9px; letter-spacing:.16em; text-transform:lowercase; color:var(--stone2); margin-bottom:22px; }
+.form-title::before { content:'> '; color:var(--gold); }
+.f2 { display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+.field { margin-bottom:13px; }
+.field label { display:block; font-family:'Fira Code',monospace; font-size:8px; letter-spacing:.12em; text-transform:lowercase; color:var(--stone2); margin-bottom:6px; }
+.field input,.field textarea,.field select {
+  width:100%; background:rgba(255,255,255,.72); border:1px solid var(--border2);
+  color:var(--ink); font-family:'EB Garamond',serif; font-size:14px;
+  padding:10px 13px; outline:none; transition:border-color .2s; appearance:none;
+}
+.field input:focus,.field textarea:focus,.field select:focus { border-color:var(--gold); }
+.field input::placeholder,.field textarea::placeholder { color:var(--stone); font-style:italic; }
+.field textarea { resize:vertical; min-height:96px; }
+.field select { color:var(--ink3); cursor:pointer; }
+.policy-note { font-family:'Fira Code',monospace; font-size:8px; color:var(--stone); line-height:1.65; padding:10px 12px; border:1px solid var(--border); background:var(--parch2); margin-bottom:13px; }
+.policy-note a { color:var(--gold); text-decoration:underline; }
+.cb { display:flex; align-items:flex-start; gap:10px; font-family:'Fira Code',monospace; font-size:9px; color:var(--stone2); line-height:1.5; margin-bottom:14px; cursor:pointer; }
+.cb input { flex-shrink:0; margin-top:2px; accent-color:var(--gold); cursor:pointer; }
+.submit {
+  width:100%; background:var(--ink); color:#fff; border:none; padding:13px;
+  font-family:'Cinzel',serif; font-size:10px; font-weight:700; letter-spacing:.2em; text-transform:lowercase;
+  cursor:pointer; transition:all .22s;
+}
+.submit:hover { background:var(--gold); transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--ink2); }
+
+/* buttons reuse */
+.btn-primary {
+  font-family:'Cinzel', serif;
+  font-size:10px; font-weight:700; letter-spacing:.18em; text-transform:lowercase;
+  color:#fff; background:var(--ink);
+  padding:14px 30px; text-decoration:none; display:inline-flex; align-items:center; gap:9px;
+  transition:all .22s; border:none; cursor:pointer;
+}
+.btn-primary:hover { background:var(--gold); transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--ink2); }
+.btn-outline {
+  font-family:'EB Garamond', serif; font-size:15px; font-style:italic; letter-spacing:.05em;
+  color:var(--ink); background:transparent;
+  padding:13px 26px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+  border:1px solid var(--border2); transition:all .22s; cursor:pointer;
+}
+.btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+
+/* ── REVEAL ── */
+.r { opacity:0; transform:translateY(14px); transition:opacity .65s,transform .65s; }
+.r.v { opacity:1; transform:none; }
+
+/* ── FOOTER ── */
+footer {
+  background:var(--ink2); padding:26px 60px;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:14px; position:relative; z-index:1;
+}
+.footer-logo { font-family:'Cinzel',serif; font-size:17px; font-weight:700; letter-spacing:.28em; text-transform:lowercase; color:rgba(255,255,255,.35); }
+.footer-logo span { color:rgba(224,188,80,.6); }
+.footer-links { display:flex; gap:22px; list-style:none; }
+.footer-links a { font-family:'Fira Code',monospace; font-size:8px; letter-spacing:.1em; text-transform:lowercase; color:rgba(255,255,255,.22); text-decoration:none; transition:color .2s; }
+.footer-links a:hover { color:rgba(224,188,80,.7); }
+.footer-copy { font-family:'Fira Code',monospace; font-size:8px; color:rgba(255,255,255,.18); letter-spacing:.04em; width:100%; padding-top:14px; border-top:1px solid rgba(255,255,255,.07); text-align:center; text-transform:lowercase; }
+
+/* responsive */
+@media(max-width:900px){
+  nav{padding:14px 20px;} nav.s{padding:10px 20px;}
+  .nav-links,.nav-cta{display:none;}
+  .sec{padding:60px 20px;}
+  .hero-content{padding:0 20px 56px;}
+  .pain-grid,.cases-grid,.price-grid,.why-grid{grid-template-columns:1fr;}
+  .svc-grid{grid-template-columns:1fr; background:none; gap:12px; border:none;}
+  .svc{border:1px solid var(--border2);}
+  .faq-wrap{grid-template-columns:1fr; gap:30px;}
+  .contact-grid{grid-template-columns:1fr; gap:38px;}
+  .f2{grid-template-columns:1fr;}
+  footer{padding:20px; flex-direction:column; gap:10px; text-align:center;}
+  .footer-links{display:none;}
+  .panel-content{grid-template-columns:1fr;}
+  .hero-proof{flex-direction:column; max-width:100%;}
+  .proof-item{border-right:none;border-bottom:1px solid rgba(255,255,255,.1);}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="logo">
+    <div class="logo-main">ainur<span>.</span></div>
+    <div class="logo-sub">ai engineering · since 2024</div>
+  </a>
+  <div class="nav-r">
+    <ul class="nav-links">
+      <li><a href="#services">услуги</a></li>
+      <li><a href="#cases">кейсы</a></li>
+      <li><a href="#pricing">пакеты</a></li>
+      <li><a href="#faq">вопросы</a></li>
+    </ul>
+    <a href="#contact" class="nav-cta">начать проект</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-overlay2"></div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <div class="eyebrow-dot"></div>
+      <span class="eyebrow-text">принимаю проекты · ответ за 24ч</span>
+      <div class="eyebrow-line"></div>
+    </div>
+
+    <h1 class="hero-h1">
+      внедряю<br>
+      <span class="accent">ai</span> в работу<br>
+      <em>от малого до большого</em>
+    </h1>
+
+    <div class="hero-rule"></div>
+
+    <p class="hero-desc">
+      <strong>для небольших команд</strong> — убираю ручную работу с помощью n8n-автоматизаций и простых ai-инструментов.<br>
+      <strong>для крупных</strong> — проектирую и собираю полноценные ai-системы, которые работают в продакшне и умеют расти.
+    </p>
+    <p class="hero-sub">
+      аудит процессов · mvp за 7 дней · поддержка после запуска<br>
+      n8n · openai · rag · telegram · crm-интеграции
+    </p>
+
+    <div class="hero-btns">
+      <a href="#contact" class="btn-hero-main">✦ начать проект</a>
+      <a href="#cases" class="btn-hero-ghost">посмотреть кейсы →</a>
+    </div>
+
+    <div class="hero-proof">
+      <div class="proof-item"><div class="proof-val">7</div><div class="proof-lbl">дней до<br>mvp</div></div>
+      <div class="proof-item"><div class="proof-val">−40%</div><div class="proof-lbl">ручных<br>операций</div></div>
+      <div class="proof-item"><div class="proof-val">10+</div><div class="proof-lbl">внедрений<br>в продакшн</div></div>
+      <div class="proof-item"><div class="proof-val">24ч</div><div class="proof-lbl">ответ на<br>заявку</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item">n8n автоматизации</span>
+    <span class="ticker-item">ai-агенты</span>
+    <span class="ticker-item">rag системы</span>
+    <span class="ticker-item">crm интеграции</span>
+    <span class="ticker-item">telegram боты</span>
+    <span class="ticker-item">от аудита до продакшна</span>
+    <span class="ticker-item">mvp за 7 дней</span>
+    <span class="ticker-item">поддержка после запуска</span>
+    <span class="ticker-item">n8n автоматизации</span>
+    <span class="ticker-item">ai-агенты</span>
+    <span class="ticker-item">rag системы</span>
+    <span class="ticker-item">crm интеграции</span>
+    <span class="ticker-item">telegram боты</span>
+    <span class="ticker-item">от аудита до продакшна</span>
+    <span class="ticker-item">mvp за 7 дней</span>
+    <span class="ticker-item">поддержка после запуска</span>
+  </div>
+</div>
+
+<!-- INTEREST: БОЛЬ -->
+<section class="sec sec-alt" id="pain">
+  <div class="sec-header r">
+    <div class="sec-eyebrow">почему это важно</div>
+    <h2 class="sec-h2">узнаёшь себя?</h2>
+    <p class="sec-sub">каждая из этих ситуаций — потеря денег и времени, которую можно устранить.</p>
+  </div>
+  <div class="pain-grid">
+    <div class="pain-card r">
+      <span class="pain-icon">⚔</span>
+      <div class="pain-title">ручная рутина</div>
+      <p class="pain-text">менеджеры тратят часы на то, что можно автоматизировать за неделю. заявки, уведомления, синхронизация — это не работа людей.</p>
+      <div class="pain-result">решается n8n-автоматизацией за 3–7 дней</div>
+    </div>
+    <div class="pain-card r">
+      <span class="pain-icon">🦉</span>
+      <div class="pain-title">знания не работают</div>
+      <p class="pain-text">регламенты, прайсы, скрипты — лежат в папках. каждый сотрудник отвлекает руководителя одними и теми же вопросами.</p>
+      <div class="pain-result">rag-система даёт ответы из документов за секунды</div>
+    </div>
+    <div class="pain-card r">
+      <span class="pain-icon">🏰</span>
+      <div class="pain-title">данные без смысла</div>
+      <p class="pain-text">аналитик выгружает таблицы вручную каждую неделю. решения принимаются по ощущениям, а не по данным.</p>
+      <div class="pain-result">агент собирает и анализирует данные автоматически</div>
+    </div>
+  </div>
+</section>
+
+<!-- DESIRE: ИНТЕРАКТИВНАЯ ДОСКА ПРОЦЕССОВ -->
+<section class="sec" id="process">
+  <div class="sec-header r">
+    <div class="sec-eyebrow">как это работает</div>
+    <h2 class="sec-h2">путь от задачи<br>до результата</h2>
+    <p class="sec-sub">нажмите на шаг — узнайте, что происходит внутри.</p>
+  </div>
+  <div class="process-board r">
+    <div class="board-header">
+      <div class="board-title">ainur · process_flow</div>
+      <div class="board-subtitle">кликните на шаг</div>
+    </div>
+    <div class="board-tabs">
+      <div class="board-tab active" onclick="setTab(0)"><span class="tab-num">I</span><span class="tab-label">задача</span></div>
+      <div class="board-tab" onclick="setTab(1)"><span class="tab-num">II</span><span class="tab-label">архитектура</span></div>
+      <div class="board-tab" onclick="setTab(2)"><span class="tab-num">III</span><span class="tab-label">mvp</span></div>
+      <div class="board-tab" onclick="setTab(3)"><span class="tab-num">IV</span><span class="tab-label">развитие</span></div>
+    </div>
+    <div class="board-panel active" id="tab-0">
+      <div class="panel-content">
+        <div class="panel-left">
+          <div class="panel-h">разбор задачи</div>
+          <p class="panel-sub">сначала — реальный процесс, потом — инструмент. задача часто оказывается другой, чем казалась.</p>
+          <ul class="panel-list">
+            <li>созвон 60–90 минут: что происходит сейчас и где теряется время</li>
+            <li>карта текущего процесса: кто, что и когда делает руками</li>
+            <li>оценка: где ai реально поможет, а где это лишнее</li>
+            <li>если задача не моя — скажу прямо</li>
+          </ul>
+        </div>
+        <div class="panel-timeline">
+          <div class="tl-title">// что вы получаете</div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot filled"></div><div class="tl-line"></div></div><div class="tl-text"><strong>созвон в течение 24ч</strong> — первый разговор о задаче</div></div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot filled"></div><div class="tl-line"></div></div><div class="tl-text"><strong>карта процесса</strong> — понятно, что автоматизировать</div></div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-text"><strong>честная оценка</strong> — стоит ли делать и сколько займёт</div></div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div class="tl-text"><strong>предложение</strong> — конкретный следующий шаг</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="board-panel" id="tab-1">
+      <div class="panel-content">
+        <div class="panel-left">
+          <div class="panel-h">архитектура</div>
+          <p class="panel-sub">всё до первой строки кода. ошибки в архитектуре стоят дороже ошибок в коде.</p>
+          <ul class="panel-list">
+            <li>интерфейс: telegram, веб, api или внутренний инструмент</li>
+            <li>структура данных: откуда берём, куда пишем, как храним</li>
+            <li>роль ai: что решает модель, что — код, где нужен человек</li>
+            <li>точки контроля: fallback, логирование, уведомления</li>
+          </ul>
+        </div>
+        <div class="panel-timeline">
+          <div class="tl-title">// результат этапа</div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot filled"></div><div class="tl-line"></div></div><div class="tl-text"><strong>схема системы</strong> — понятная всей команде</div></div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot filled"></div><div class="tl-line"></div></div><div class="tl-text"><strong>список интеграций</strong> — что подключаем и как</div></div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-text"><strong>риски</strong> — что может пойти не так и как решено</div></div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div class="tl-text"><strong>фиксируем стоимость и сроки</strong> mvp</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="board-panel" id="tab-2">
+      <div class="panel-content">
+        <div class="panel-left">
+          <div class="panel-h">mvp за 7–10 дней</div>
+          <p class="panel-sub">не макет и не демо. рабочая система на реальных данных — с первого дня.</p>
+          <ul class="panel-list">
+            <li>сборка по утверждённой архитектуре</li>
+            <li>тестирование на ваших данных и сценариях</li>
+            <li>итерации по обратной связи в процессе</li>
+            <li>документация: как работает и как управлять</li>
+          </ul>
+        </div>
+        <div class="panel-timeline">
+          <div class="tl-title">// 7–10 дней по шагам</div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot filled"></div><div class="tl-line"></div></div><div class="tl-text"><strong>дни 1–2:</strong> базовый пайплайн, первые интеграции</div></div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot filled"></div><div class="tl-line"></div></div><div class="tl-text"><strong>дни 3–5:</strong> логика, тестирование, первая обратная связь</div></div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-text"><strong>дни 6–8:</strong> доработки, edge-cases, документация</div></div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div class="tl-text"><strong>день 10:</strong> передача в продакшн</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="board-panel" id="tab-3">
+      <div class="panel-content">
+        <div class="panel-left">
+          <div class="panel-h">развитие после запуска</div>
+          <p class="panel-sub">хорошая система — не версия 1.0. остаюсь рядом: правки, новые сценарии, рост вместе с бизнесом.</p>
+          <ul class="panel-list">
+            <li>поддержка: быстрые правки, мониторинг, ответы на вопросы</li>
+            <li>новые интеграции по мере роста</li>
+            <li>итерационное развитие под изменения процессов</li>
+            <li>документация обновляется вместе с системой</li>
+          </ul>
+        </div>
+        <div class="panel-timeline">
+          <div class="tl-title">// форматы работы после запуска</div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot filled"></div><div class="tl-line"></div></div><div class="tl-text"><strong>передача команде</strong> — документация, обучение, выход</div></div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot filled"></div><div class="tl-line"></div></div><div class="tl-text"><strong>поддержка</strong> — ретейнер, отвечаю в течение 4 часов</div></div>
+          <div class="tl-item"><div class="tl-dot-wrap"><div class="tl-dot"></div></div><div class="tl-text"><strong>итерации</strong> — развиваем систему спринтами по вашему ритму</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="div-orn">✦ &nbsp; · &nbsp; ✦ &nbsp; · &nbsp; ✦</div>
+
+<!-- SERVICES -->
+<section class="sec sec-alt" id="services">
+  <div class="sec-header r">
+    <div class="sec-eyebrow">что делаю</div>
+    <h2 class="sec-h2">услуги</h2>
+    <p class="sec-sub">от простой автоматизации одного шага до полноценной ai-архитектуры.</p>
+  </div>
+  <div class="svc-grid r">
+    <div class="svc"><div class="svc-num">i</div><div class="svc-title">автоматизации на n8n</div><p class="svc-desc">убираем конкретный ручной шаг: маршрутизация заявок, уведомления, синхронизация между сервисами. быстро, без излишков, работает сразу.</p><div class="svc-stack"><span class="svc-t">n8n</span><span class="svc-t">webhooks</span><span class="svc-t">triggers</span></div></div>
+    <div class="svc"><div class="svc-num">ii</div><div class="svc-title">ai-ассистенты и агенты</div><p class="svc-desc">интерфейсы, где ai ведёт человека по задаче. или агент, который сам проходит многошаговый процесс от входа до результата без участия оператора.</p><div class="svc-stack"><span class="svc-t">llm</span><span class="svc-t">agent</span><span class="svc-t">chat ui</span></div></div>
+    <div class="svc"><div class="svc-num">iii</div><div class="svc-title">rag и база знаний</div><p class="svc-desc">документы, регламенты, правила компании — подключаю как знания системы. ответы с источниками, fallback при неуверенности, полный контроль качества.</p><div class="svc-stack"><span class="svc-t">rag</span><span class="svc-t">qdrant</span><span class="svc-t">embeddings</span></div></div>
+    <div class="svc"><div class="svc-num">iv</div><div class="svc-title">интеграции и поддержка</div><p class="svc-desc">связываю llm, crm, telegram, базы данных и api в единый контур. после запуска остаюсь: правки, новые сценарии, итерационное развитие системы.</p><div class="svc-stack"><span class="svc-t">api</span><span class="svc-t">crm</span><span class="svc-t">support</span></div></div>
+  </div>
+</section>
+
+<!-- CASES -->
+<section class="sec sec-stone" id="cases">
+  <div class="sec-header r">
+    <div class="sec-eyebrow">кейсы</div>
+    <h2 class="sec-h2">что сделано</h2>
+    <p class="sec-sub">проблема — решение — результат. без лишних слов.</p>
+  </div>
+  <div class="cases-grid">
+    <div class="case r">
+      <div class="case-top"><span class="case-cat">автоматизация</span><span class="case-time">⏱ 6 дней</span></div>
+      <div class="case-body">
+        <div class="case-title">обработка входящих заявок</div>
+        <p class="case-problem">менеджеры вручную разбирали telegram, почту и форму — теряли заявки, дублировали задачи в crm.</p>
+        <p class="case-result">n8n-воркфлоу: парсинг из 3 каналов → классификация llm → задача в crm → уведомление. <strong>время реакции: с 4 часов до 5 минут.</strong></p>
+        <div class="case-stack"><span class="case-t">n8n</span><span class="case-t">openai</span><span class="case-t">telegram</span><span class="case-t">amocrm</span></div>
+      </div>
+    </div>
+    <div class="case r">
+      <div class="case-top"><span class="case-cat">rag-система</span><span class="case-time">⏱ 10 дней</span></div>
+      <div class="case-body">
+        <div class="case-title">ассистент по регламентам</div>
+        <p class="case-problem">команда из 12 человек каждый день задавала одинаковые вопросы руководителю — по правилам, прайсу, скриптам.</p>
+        <p class="case-result">rag поверх 80+ документов. ответы с источниками, fallback-фраза при неуверенности. <strong>руководитель освободил ~2 часа в день.</strong></p>
+        <div class="case-stack"><span class="case-t">rag</span><span class="case-t">qdrant</span><span class="case-t">llm</span><span class="case-t">telegram</span></div>
+      </div>
+    </div>
+    <div class="case r">
+      <div class="case-top"><span class="case-cat">ai-агент</span><span class="case-time">⏱ 14 дней</span></div>
+      <div class="case-body">
+        <div class="case-title">агент аналитики продаж</div>
+        <p class="case-problem">аналитик тратил 4+ часа в неделю на выгрузки, фильтрацию и сводки из трёх источников данных.</p>
+        <p class="case-result">агент: запрос к бд → агрегация → анализ llm → отчёт в telegram по расписанию. <strong>аналитик занимается интерпретацией, не выгрузками.</strong></p>
+        <div class="case-stack"><span class="case-t">agent</span><span class="case-t">postgres</span><span class="case-t">n8n</span><span class="case-t">openai</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="sec" id="pricing">
+  <div class="sec-header r">
+    <div class="sec-eyebrow">пакеты</div>
+    <h2 class="sec-h2">с чего начать</h2>
+    <p class="sec-sub">три варианта входа — под разный масштаб задачи и степень её ясности.</p>
+  </div>
+  <div class="price-grid">
+    <div class="pcard r">
+      <div class="pcard-name">аудит</div>
+      <div class="pcard-sub">разобраться в задаче</div>
+      <div class="pcard-price">от 15K</div>
+      <div class="pcard-note">₽ · 3–5 дней</div>
+      <div class="pcard-hr"></div>
+      <ul class="pcard-list">
+        <li>разбор текущего процесса</li>
+        <li>где ai реально поможет, а где нет</li>
+        <li>архитектура решения на бумаге</li>
+        <li>оценка стоимости внедрения</li>
+        <li class="note">если задача уже ясна — возможна простая автоматизация в рамках этого пакета</li>
+      </ul>
+      <a href="#contact" class="btn-outline" style="display:inline-flex;width:100%;justify-content:center">начать с аудита</a>
+    </div>
+    <div class="pcard feat r">
+      <div class="pcard-name">mvp</div>
+      <div class="pcard-sub">рабочая версия за неделю</div>
+      <div class="pcard-price">от 80K</div>
+      <div class="pcard-note">₽ · 7–10 дней</div>
+      <div class="pcard-hr"></div>
+      <ul class="pcard-list">
+        <li>разбор задачи + архитектура</li>
+        <li>полная сборка под конкретный сценарий</li>
+        <li>тестирование на реальных данных</li>
+        <li>передача с документацией</li>
+        <li>1 месяц поддержки включён</li>
+      </ul>
+      <a href="#contact" class="btn-primary" style="display:inline-flex;width:100%;justify-content:center">✦ запустить mvp</a>
+    </div>
+    <div class="pcard r">
+      <div class="pcard-name">под ключ</div>
+      <div class="pcard-sub">полное внедрение</div>
+      <div class="pcard-price">от 200K</div>
+      <div class="pcard-note">₽ · сроки обсуждаются</div>
+      <div class="pcard-hr"></div>
+      <ul class="pcard-list">
+        <li>аудит + проектирование системы</li>
+        <li>полная архитектура и сборка</li>
+        <li>интеграции с вашей инфраструктурой</li>
+        <li>итерационное развитие</li>
+        <li>постоянная поддержка и оптимизация</li>
+      </ul>
+      <a href="#contact" class="btn-outline" style="display:inline-flex;width:100%;justify-content:center">обсудить проект</a>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section class="sec sec-alt" id="why">
+  <div class="sec-header r">
+    <div class="sec-eyebrow">принципы</div>
+    <h2 class="sec-h2">чем отличается</h2>
+    <p class="sec-sub">под тихим визуалом — инженерная дисциплина.</p>
+  </div>
+  <div class="why-grid">
+    <div class="why r"><div class="why-glyph">I</div><div class="why-title">без чёрного ящика</div><p class="why-text">structure, evidence, fallback и контроль качества в каждой системе. понятно, как работает и почему отвечает именно так — не «просто работает».</p></div>
+    <div class="why r"><div class="why-glyph">II</div><div class="why-title">продукт, не промпт</div><p class="why-text">думаю сценарием: вход → обработка → решение → сохранение → следующий шаг. работает в продакшне, а не только в демо руководителю.</p></div>
+    <div class="why r"><div class="why-glyph">III</div><div class="why-title">системы, которые растут</div><p class="why-text">закладываю нормальный backend и понятный слой изменений. запустились — система умеет развиваться, а не замерзает на версии 1.0.</p></div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="sec sec-stone" id="faq">
+  <div class="faq-wrap r">
+    <div class="faq-aside">
+      <div class="sec-eyebrow">faq</div>
+      <h2 class="sec-h2">частые<br>вопросы</h2>
+      <p>чтобы первый разговор был о задаче, а не о базовом.</p>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item"><div class="faq-q" onclick="faq(this)">ты делаешь только чат-ботов?<span class="faq-ico">+</span></div><div class="faq-a">нет. чат-бот — один из форматов. я собираю ai-системы целиком: ассистенты, аналитические пайплайны, n8n-автоматизации, полные интеграции. формат диктует задача.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="faq(this)">чем отличаешься от фрилансера?<span class="faq-ico">+</span></div><div class="faq-a">беру задачу целиком: разбираю процесс, проектирую архитектуру, собираю систему и остаюсь после запуска. не сдаю файл — сдаю работающий инструмент с поддержкой. если задача не моя — скажу прямо.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="faq(this)">можно начать с маленькой задачи?<span class="faq-ico">+</span></div><div class="faq-a">можно и нужно. лучший старт — конкретная боль, а не «хотим ai». минимальный вход — аудит за 3–5 дней или простая автоматизация, если задача уже ясна.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="faq(this)">что будет после запуска?<span class="faq-ico">+</span></div><div class="faq-a">три варианта: передаю команде с полной документацией, перехожу в режим поддержки, или развиваем систему итерациями. выбираем под ваш ритм и бюджет.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="faq(this)">работаешь с нашим стеком?<span class="faq-ico">+</span></div><div class="faq-a">работаю с любым стеком, у которого есть api или webhook. amocrm, bitrix, notion, airtable, google sheets, кастомные бд — всё подключается. нестандартный инструмент — обсудим.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="sec" id="contact">
+  <div class="contact-grid">
+    <div class="contact-info r">
+      <div class="sec-eyebrow">связь</div>
+      <h2 class="sec-h2">расскажи<br>что болит</h2>
+      <p>коротко опиши задачу: что происходит сейчас, что хочется получить на выходе. этого достаточно для первого разговора.</p>
+      <div class="promise-box">
+        <p>отвечу в telegram или email в течение 24 часов.</p>
+        <p>если задача не моя — скажу прямо и, если смогу, порекомендую кого-то.</p>
+      </div>
+      <a href="https://t.me/nurevergarden" class="tg-btn" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        написать в telegram
+      </a>
+    </div>
+    <div class="form-scroll r">
+      <div class="form-title">init_project_request()</div>
+      <div class="f2">
+        <div class="field"><label>имя</label><input type="text" placeholder="как обращаться"></div>
+        <div class="field"><label>компания</label><input type="text" placeholder="название"></div>
+      </div>
+      <div class="field"><label>telegram или email</label><input type="text" placeholder="@username или почта"></div>
+      <div class="field">
+        <label>пакет</label>
+        <select>
+          <option value="">нужно обсудить</option>
+          <option>аудит / простая автоматизация (от 15K)</option>
+          <option>mvp за 7–10 дней (от 80K)</option>
+          <option>полное внедрение под ключ (от 200K)</option>
+        </select>
+      </div>
+      <div class="field"><label>задача</label><textarea placeholder="что происходит сейчас и что хочется получить на выходе"></textarea></div>
+      <div class="policy-note">данные передаются только для ответа по проекту · не передаются третьим лицам<br><a href="#">политика обработки данных</a> · исполнитель: айнур · по запросу предоставляются реквизиты</div>
+      <label class="cb"><input type="checkbox" checked>согласен на обработку контакта и описания задачи для ответа по проекту</label>
+      <button class="submit" onclick="onSubmit(this)">✦ отправить заявку</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">ainur<span>.</span></span>
+  <ul class="footer-links">
+    <li><a href="#">политика данных</a></li>
+    <li><a href="https://t.me/nurevergarden" target="_blank">telegram</a></li>
+    <li><a href="https://github.com/foggearthquake-star" target="_blank">github</a></li>
+  </ul>
+  <span class="footer-copy">© 2025 ainur · ai engineering · обработка данных согласно фз-152 · @nurevergarden</span>
+</footer>
+
+<script>
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => nav.classList.toggle('s', scrollY > 40));
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e,i) => { if(e.isIntersecting) setTimeout(()=>e.target.classList.add('v'), i*80); });
+},{threshold:.06});
+document.querySelectorAll('.r').forEach(el=>obs.observe(el));
+
+function setTab(idx){
+  document.querySelectorAll('.board-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('.board-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
+}
+function faq(el){
+  const item=el.closest('.faq-item');
+  const open=item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+  if(!open) item.classList.add('open');
+}
+function onSubmit(btn){
+  btn.textContent='✦ отправлено — отвечу в течение 24 часов';
+  btn.style.background='#3a6048';
+  btn.disabled=true;
+}
+</script>
+</body>
+</html>

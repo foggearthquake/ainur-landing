@@ -1,0 +1,37 @@
+{
+  "name": "ainur-ai-integrator-landing",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbo",
+    "build": "next build",
+    "start": "next start",
+    "preview": "next build && next start",
+    "lint": "tsc --noEmit",
+    "bot:webhook:set": "node scripts/set-telegram-webhook.mjs",
+    "bot:webhook:info": "node scripts/get-telegram-webhook-info.mjs",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "@libsql/client": "0.15.15",
+    "drizzle-orm": "0.44.4",
+    "lucide-react": "^1.7.0",
+    "next": "15.5.14",
+    "next-themes": "^0.4.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "zod": "3.24.2"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.3.1",
+    "@types/node": "22.13.10",
+    "@types/react": "19.0.10",
+    "@types/react-dom": "19.0.4",
+    "drizzle-kit": "0.31.4",
+    "eslint": "9.22.0",
+    "eslint-config-next": "15.5.14",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "typescript": "5.8.2"
+  }
+}
