@@ -232,9 +232,8 @@ export default function ArcaneLanding() {
           </h1>
 
           <p className={styles.heroDescription}>
-            Сайты, боты, автоматизации, платформы, AI-системы.
+            Закрываем цифровые задачи бизнеса: сайты, боты, автоматизации, платформы, AI-системы.
             Нет — выкую с нуля. Не работает — перекую.
-            Работает — или переделываю.
           </p>
 
           <div className={styles.heroActions}>
@@ -494,6 +493,41 @@ export default function ArcaneLanding() {
               <a href="/privacy">Политикой конфиденциальности</a>.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* ── SEO Content ── */}
+      <section className={styles.section} data-reveal>
+        <div className={styles.sectionLabel}>О нас</div>
+        <h2 className={styles.sectionTitle}>Закрываем цифровые задачи бизнеса</h2>
+        <p className={styles.sectionSubtitle}>
+          От аналитики и разработки любой сложности до проектного консалтинга и поддержки готового решения.
+        </p>
+        <div className={styles.whyGrid}>
+          <article className={styles.whyCard}>
+            <h3>Разработка сайтов и приложений</h3>
+            <p>
+              Создание сайтов, лендингов, интернет-магазинов, личных кабинетов, дашбордов
+              и внутренних инструментов для команд. Адаптивный дизайн, быстрая загрузка,
+              SEO-оптимизация из коробки.
+            </p>
+          </article>
+          <article className={styles.whyCard}>
+            <h3>Автоматизация и интеграции</h3>
+            <p>
+              Автоматизация бизнес-процессов через n8n, Telegram-боты, CRM-интеграции,
+              API-связки, webhook-сценарии. Подключение 1С, Битрикс24, AmoCRM
+              и любых внешних сервисов.
+            </p>
+          </article>
+          <article className={styles.whyCard}>
+            <h3>AI-решения и консалтинг</h3>
+            <p>
+              Внедрение искусственного интеллекта: RAG-системы, AI-агенты,
+              машинное обучение, аналитика данных. Проектный консалтинг по
+              цифровой трансформации и оптимизации процессов.
+            </p>
+          </article>
         </div>
       </section>
 
