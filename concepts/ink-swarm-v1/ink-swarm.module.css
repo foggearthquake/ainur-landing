@@ -1,0 +1,649 @@
+/* ═══════════════════════════════════════════════
+   ink-swarm-v1 — light minimal, scroll cube→text
+   ═══════════════════════════════════════════════ */
+
+/* ── Header ── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(247, 246, 243, 0.72);
+  backdrop-filter: saturate(180%) blur(10px);
+  -webkit-backdrop-filter: saturate(180%) blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.headerInner {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 11px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.brandWord {
+  white-space: nowrap;
+}
+
+.brand .dot {
+  color: var(--text-muted);
+}
+
+.toHero {
+  appearance: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  transition: color 0.18s ease;
+}
+
+.toHero:hover {
+  color: var(--text);
+}
+
+/* header over the dark hero */
+.headerHero {
+  background: transparent;
+  border-bottom-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.headerHero .brand,
+.headerHero .toHero {
+  color: #f1f1ec;
+}
+
+.headerHero .brand .dot {
+  color: rgba(241, 241, 236, 0.55);
+}
+
+.heroBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(circle at 50% 42%, #14161c 0%, #0a0b0f 72%);
+  will-change: opacity;
+}
+
+/* ── Hero (scroll spacer + fixed avatar) ── */
+.hero {
+  position: relative;
+  height: 120vh;
+}
+
+/* ── Hero hotspots — the cube's two clickable halves ── */
+.hotspots {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(72vw, 760px);
+  height: 100vh;
+  z-index: 1;
+  display: flex;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.hotspot {
+  flex: 1;
+  appearance: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding-bottom: 18vh;
+  color: inherit;
+  outline: none;
+}
+
+.hotspotsOff .hotspot {
+  pointer-events: none;
+}
+
+.hotLabel {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.78;
+  transform: translateY(6px);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.75);
+  transition: opacity 0.25s ease, transform 0.25s ease, text-shadow 0.25s ease;
+}
+
+.hotSub {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.hotLeft .hotLabel {
+  color: #6fe3ff;
+}
+
+.hotRight .hotLabel {
+  color: #74f0b5;
+}
+
+.hotspot:hover .hotLabel,
+.hotspot:focus-visible .hotLabel {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hotLeft:hover .hotLabel {
+  text-shadow: 0 0 14px rgba(111, 227, 255, 0.7);
+}
+
+.hotRight:hover .hotLabel {
+  text-shadow: 0 0 14px rgba(116, 240, 181, 0.7);
+}
+
+.hotspot:hover .hotSub {
+  opacity: 0.7;
+}
+
+@media (max-width: 680px) {
+  .hotspots {
+    width: 92vw;
+  }
+  .hotspot {
+    padding-bottom: 22vh;
+  }
+}
+
+.scrollHint {
+  position: fixed;
+  bottom: 5vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(240, 240, 234, 0.72);
+  pointer-events: none;
+  animation: floatHint 2.4s ease-in-out infinite;
+}
+
+@keyframes floatHint {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(6px);
+  }
+}
+
+/* ── Content ── */
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section {
+  padding-top: 104px;
+  scroll-margin-top: 80px;
+}
+
+.section:first-child {
+  padding-top: 40px;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.worksLine {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  line-height: 1.7;
+  margin: 0 0 30px;
+}
+
+/* ── Cases ── */
+.cases {
+  border-top: 1px solid var(--border);
+}
+
+.case {
+  border-bottom: 1px solid var(--border);
+}
+
+.case summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  padding: 22px 0;
+}
+
+.case summary::-webkit-details-marker {
+  display: none;
+}
+
+.caseName {
+  font-size: 1.14rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.caseCat {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.pm {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.pm::after {
+  content: "+";
+}
+
+.case[open] .pm::after {
+  content: "\2013";
+}
+
+.caseBody {
+  padding: 0 0 26px;
+  max-width: 62ch;
+}
+
+.caseBody p {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  font-size: 0.98rem;
+  line-height: 1.62;
+}
+
+.caseResult {
+  color: var(--text) !important;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.tag {
+  font-family: var(--font-mono);
+  font-size: 0.67rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: rgba(26, 26, 26, 0.05);
+  color: #6b6a66;
+}
+
+.caseLink {
+  display: inline-block;
+  margin-top: 16px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--text);
+  padding-bottom: 1px;
+}
+
+/* ── Contact ── */
+.contactLead {
+  font-size: clamp(1.5rem, 3.6vw, 1.95rem);
+  line-height: 1.24;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+}
+
+.contactText {
+  color: var(--text-muted);
+  line-height: 1.62;
+  margin: 0 0 26px;
+  max-width: 52ch;
+}
+
+.contactLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 38px;
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+}
+
+.contactLinks a {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 2px;
+  transition: border-color 0.15s ease;
+}
+
+.contactLinks a:hover {
+  border-color: var(--text);
+}
+
+.formCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 30px;
+}
+
+.privacy {
+  margin-top: 16px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.privacy a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── Footer ── */
+.footer {
+  margin-top: 120px;
+  border-top: 1px solid var(--border);
+  padding: 26px 0 60px;
+}
+
+.footerInner {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.footerMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 18px;
+}
+
+.footerLinks a:hover {
+  color: var(--text);
+}
+
+/* ── Neural net — accent band at the top of the solutions panel ── */
+.panelNet {
+  display: block;
+  width: 100%;
+  height: 60px;
+  margin-bottom: 16px;
+  color: #5fd6e6;
+  opacity: 0.55;
+}
+
+.nEdge {
+  stroke: currentColor;
+  stroke-width: 0.6;
+  opacity: 0.18;
+}
+
+.nNode {
+  fill: currentColor;
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollHint,
+  .panelOverlay,
+  .panel {
+    animation: none;
+  }
+}
+
+/* ── Click panels (light, slide in over the dispersed cube) ── */
+.panelOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(8, 9, 13, 0.42);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: ovIn 0.3s ease;
+}
+
+@keyframes ovIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.panel {
+  position: relative;
+  width: min(540px, 100%);
+  max-height: 86vh;
+  overflow-y: auto;
+  background: linear-gradient(155deg, rgba(48, 52, 64, 0.62) 0%, rgba(15, 17, 23, 0.5) 60%);
+  backdrop-filter: blur(44px) saturate(165%);
+  -webkit-backdrop-filter: blur(44px) saturate(165%);
+  color: #f3f4f7;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 26px;
+  padding: 30px 32px 28px;
+  box-shadow:
+    0 44px 120px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 0 60px rgba(255, 255, 255, 0.05);
+  animation: panelIn 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.panelAbout,
+.panelSolutions {
+  margin: 0 auto;
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.panelClose {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  appearance: none;
+  background: none;
+  border: 0;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: rgba(243, 244, 247, 0.6);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.panelClose:hover {
+  color: #fff;
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 94px;
+  height: 94px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center 26%;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+}
+
+.panelKicker {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(243, 244, 247, 0.55);
+  margin-bottom: 6px;
+}
+
+.panelTitle {
+  font-size: clamp(1.3rem, 3vw, 1.7rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.panelSolutions .panelTitle {
+  margin-bottom: 16px;
+}
+
+.panel p {
+  margin: 0 0 13px;
+  color: rgba(236, 239, 244, 0.72);
+  font-size: 0.98rem;
+  line-height: 1.62;
+}
+
+/* ── Solutions panel: iconed list ── */
+.solLead {
+  font-size: 1rem !important;
+  color: #f3f4f7 !important;
+  margin: 0 0 18px !important;
+}
+
+.solList {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.solItem {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.solIconWrap {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7fe7f2;
+  background: rgba(120, 225, 240, 0.12);
+  border: 1px solid rgba(120, 225, 240, 0.3);
+}
+
+.solIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.solBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.solTitle {
+  font-size: 0.96rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #f4f5f8;
+}
+
+.solText {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: rgba(236, 239, 244, 0.66);
+}
+
+.solClose {
+  font-size: 0.92rem !important;
+  color: #f3f4f7 !important;
+  margin: 4px 0 0 !important;
+}
+
+/* (workflow / before-after block removed) */
