@@ -1,8 +1,26 @@
 import Script from "next/script";
 import type { Metadata } from "next";
+import { Sora, JetBrains_Mono } from "next/font/google";
 import Providers from "./providers";
 
 import "./globals.css";
+
+// Self-hosted at build time (no runtime request to Google — loads fine in RU without VPN)
+const sora = Sora({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-body",
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin", "cyrillic"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
+  display: "swap",
+  fallback: ["monospace"],
+});
 
 const DOMAIN = "https://gabdra.pw";
 
@@ -66,7 +84,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" suppressHydrationWarning>
+    <html lang="ru" className={`${sora.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#fbfbfa" />
         <script
