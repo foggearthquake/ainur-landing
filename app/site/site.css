@@ -1,0 +1,60 @@
+/* ─────────────────────────────────────────────────────────────
+   Tailwind v4 — scoped to /site only (imported in app/site/layout.tsx).
+   Dark, refined, high-contrast. One accent (muted lime). No brown,
+   no AI-purple. `source(none)` keeps it out of the main gabdra.pw bundle.
+   ───────────────────────────────────────────────────────────── */
+@import "tailwindcss" source(none);
+@import "tw-animate-css";
+
+@source "../../app/site/**/*.{ts,tsx}";
+@source "../../concepts/site-presentation-v1/**/*.{ts,tsx}";
+@source "../../components/**/*.{ts,tsx}";
+
+:root {
+  --radius: 1.1rem;
+
+  --background: oklch(0.155 0.008 265);     /* near-black, cool charcoal */
+  --surface: oklch(0.205 0.009 265);        /* raised surface */
+  --surface-2: oklch(0.245 0.01 265);
+  --foreground: oklch(0.965 0.003 255);     /* off-white */
+  --muted-foreground: oklch(0.68 0.012 260);/* soft gray */
+  --faint: oklch(0.5 0.01 262);             /* faint gray */
+  --border: oklch(0.98 0.003 255 / 0.1);
+
+  --accent: oklch(0.885 0.175 118);         /* muted lime — the single accent */
+  --accent-foreground: oklch(0.17 0.006 260);/* near-black text on lime (readable) */
+
+  --primary: oklch(0.97 0.002 255);         /* off-white CTA */
+  --primary-foreground: oklch(0.17 0.008 265);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-faint: var(--faint);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --font-sans: var(--font-sans-site);
+  --font-display: var(--font-sans-site);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+  --radius-2xl: calc(var(--radius) + 16px);
+}
+
+/* The root globals.css resets `a { color: inherit }` (unlayered), which leaks into
+   /site and beats Tailwind's layered `text-accent-foreground` on link-buttons —
+   making dark text render white on the lime CTAs. Restore it, unlayered. */
+a.text-accent-foreground {
+  color: var(--accent-foreground);
+}
