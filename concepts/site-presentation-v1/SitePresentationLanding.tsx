@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useMotionValue, useSpring, type MotionValue } from "framer-motion";
 import {
@@ -19,6 +19,8 @@ import {
   Star,
   Robot,
   Lightning,
+  Sparkle,
+  MapTrifold,
   TelegramLogo,
 } from "@phosphor-icons/react";
 
@@ -54,37 +56,72 @@ function Grain() {
   );
 }
 
-/* ── the treasure route: a curvy line that draws itself as you scroll ── */
+/* ── the treasure route: a curvy line that draws itself as you scroll ──
+   The path is generated from the real page height (measured with a
+   ResizeObserver), so dashes and curves keep their proportions instead of
+   being stretched by preserveAspectRatio. Visible on all breakpoints:
+   thin at the very left edge on mobile, wider at lg+. */
+const ROUTE_END_OFFSET = 150; // px above the page bottom where the X sits
+
+function buildRoutePath(h: number) {
+  const end = h - ROUTE_END_OFFSET;
+  const seg = 560; // one S-curve per ~560px of page
+  let d = `M20 8`;
+  let y = 8;
+  let side = 1;
+  while (y < end - seg) {
+    const next = Math.min(y + seg, end);
+    d += ` C ${20 + 17 * side} ${y + seg * 0.35}, ${20 - 15 * side} ${y + seg * 0.7}, 20 ${next}`;
+    y = next;
+    side = -side;
+  }
+  d += ` L 20 ${end}`;
+  return d;
+}
+
 function TreasureRoute({ progress }: { progress: MotionValue<number> }) {
-  const cometTop = useTransform(progress, [0, 1], ["1%", "86%"]);
-  const D = "M20 6 C 38 130, 4 250, 20 380 S 40 600, 18 720 S 2 830, 20 880";
+  const ref = useRef<HTMLDivElement>(null);
+  const [h, setH] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setH(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const cometTop = useTransform(progress, [0, 1], [8, Math.max(h - ROUTE_END_OFFSET, 8)]);
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-y-0 left-4 z-40 hidden w-10 lg:block xl:left-8">
-      <svg viewBox="0 0 40 1000" preserveAspectRatio="none" fill="none" className="h-full w-full">
-        <path d={D} stroke="var(--accent)" strokeOpacity="0.5" strokeWidth="2.6" strokeDasharray="0.4 2.2" strokeLinecap="round" className="[filter:drop-shadow(0_0_3px_color-mix(in_oklch,var(--accent),transparent_45%))]" />
-        <motion.path
-          d={D}
-          stroke="var(--accent)"
-          strokeWidth="3.2"
-          strokeLinecap="round"
-          style={{ pathLength: progress }}
-          className="[filter:drop-shadow(0_0_7px_color-mix(in_oklch,var(--accent),transparent_25%))]"
-        />
-      </svg>
-      <motion.div
-        style={{ top: cometTop }}
-        className="absolute left-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_22px_6px_color-mix(in_oklch,var(--accent),transparent_38%)]"
-      />
-      {/* X marks the spot — generated treasure-map cross; screen blend drops the black bg */}
-      <motion.div
-        className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2"
-        style={{ top: "87%" }}
-        animate={{ scale: [1, 1.06, 1] }}
-        transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/site/cross.png" alt="" style={{ width: 82, height: 82, maxWidth: "none" }} />
-      </motion.div>
+    <div ref={ref} aria-hidden className="pointer-events-none absolute inset-y-0 left-0.5 z-40 w-6 sm:left-2 lg:left-4 lg:w-10 xl:left-8">
+      {h > 0 && (
+        <>
+          <svg viewBox={`0 0 40 ${h}`} preserveAspectRatio="none" fill="none" className="h-full w-full">
+            <path d={buildRoutePath(h)} stroke="var(--accent)" strokeOpacity="0.5" strokeWidth="2.6" strokeDasharray="3 14" strokeLinecap="round" vectorEffect="non-scaling-stroke" className="[filter:drop-shadow(0_0_3px_color-mix(in_oklch,var(--accent),transparent_45%))]" />
+            <motion.path
+              d={buildRoutePath(h)}
+              stroke="var(--accent)"
+              strokeWidth="3.2"
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+              style={{ pathLength: progress }}
+              className="[filter:drop-shadow(0_0_7px_color-mix(in_oklch,var(--accent),transparent_25%))]"
+            />
+          </svg>
+          <motion.div
+            style={{ top: cometTop }}
+            className="absolute left-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_22px_6px_color-mix(in_oklch,var(--accent),transparent_38%)]"
+          />
+          {/* X marks the spot — generated treasure-map cross; sits where the route ends */}
+          <motion.div
+            className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2"
+            style={{ top: h - ROUTE_END_OFFSET }}
+            animate={{ scale: [1, 1.06, 1] }}
+            transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/site/cross.png" alt="" className="h-12 w-12 max-w-none lg:h-[82px] lg:w-[82px]" />
+          </motion.div>
+        </>
+      )}
     </div>
   );
 }
@@ -247,12 +284,62 @@ function Wrap({ children, className }: { children: ReactNode; className?: string
   return <div className={`mx-auto w-full max-w-6xl px-5 sm:px-8 ${className ?? ""}`}>{children}</div>;
 }
 
+/* ── interactive floor plan demo: real hotspots over the generated plan ── */
+const planSpots = [
+  { x: 74, y: 46, title: "Зал у окна", sub: "8 столов · сегодня свободно", cta: "Забронировать" },
+  { x: 37, y: 38, title: "Бар", sub: "Барная карта и посадка", cta: "Смотреть меню" },
+  { x: 66, y: 82, title: "Летняя веранда", sub: "Открыта с мая", cta: "Выбрать стол" },
+];
+
+function FloorplanDemo() {
+  const [active, setActive] = useState<number | null>(0);
+  return (
+    <div className="relative overflow-hidden rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-1.5 shadow-[0_40px_80px_-34px_rgba(0,0,0,0.85)]">
+      <div className="relative overflow-hidden rounded-[calc(1.6rem-0.375rem)]">
+        <Image src="/site/floorplan-demo.png" alt="Интерактивный план зала: кликабельные зоны с бронированием" width={1536} height={1024} sizes="(min-width: 1024px) 560px, 92vw" className="h-auto w-full select-none" />
+        {planSpots.map((s, i) => (
+          <div key={s.title} className="absolute" style={{ left: `${s.x}%`, top: `${s.y}%` }}>
+            <button
+              type="button"
+              aria-label={s.title}
+              onClick={() => setActive(active === i ? null : i)}
+              className="group relative -translate-x-1/2 -translate-y-1/2"
+            >
+              <span className="absolute -inset-2 animate-ping rounded-full border border-accent/50" />
+              <span className={`relative flex h-5 w-5 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-125 ${active === i ? "bg-accent" : "bg-accent/80"}`}>
+                <span className="h-1.5 w-1.5 rounded-full bg-black/50" />
+              </span>
+            </button>
+            {active === i && (
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.94 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.35, ease: EASE }}
+                className={`absolute z-10 w-44 rounded-xl border border-white/12 bg-background/95 p-3.5 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.9)] backdrop-blur-md ${s.x > 55 ? "right-4" : "left-4"} ${s.y > 60 ? "bottom-5" : "top-5"}`}
+              >
+                <p className="text-[0.88rem] font-semibold leading-tight">{s.title}</p>
+                <p className="mt-1 text-[0.74rem] leading-snug text-muted-foreground">{s.sub}</p>
+                <span className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-[0.72rem] font-semibold text-accent-foreground">
+                  {s.cta} <ArrowUpRight size={11} weight="bold" />
+                </span>
+              </motion.div>
+            )}
+          </div>
+        ))}
+      </div>
+      <p className="flex items-center gap-2 px-3 py-2.5 font-mono text-[0.66rem] uppercase tracking-[0.14em] text-faint">
+        <MapTrifold size={14} className="text-accent" /> Живой пример — потрогайте точки на плане
+      </p>
+    </div>
+  );
+}
+
 export default function SitePresentationLanding() {
   const rootRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll();
 
   return (
-    <div ref={rootRef} className="relative overflow-clip" id="top">
+    <div ref={rootRef} data-site-root className="relative overflow-clip" id="top">
       <Grain />
       <TreasureRoute progress={scrollYProgress} />
 
@@ -277,18 +364,18 @@ export default function SitePresentationLanding() {
       <section className="relative">
         {/* large atmospheric hero background — the treasure-map route */}
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-[5] overflow-hidden">
-          <Image src="/site/hero-site.png" alt="" fill priority sizes="100vw" className="object-cover object-right opacity-[0.55]" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/35" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/55" />
+          <Image src="/site/hero-site.png" alt="" fill priority sizes="100vw" className="object-cover object-[72%_center] opacity-90" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/65 to-background/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/35" />
         </div>
-        <Wrap className="grid min-h-[100dvh] grid-cols-1 items-center gap-14 pb-20 pt-36 lg:grid-cols-[1.1fr_0.9fr] lg:pt-28 lg:pl-20">
+        <Wrap className="grid min-h-[92dvh] grid-cols-1 items-center gap-14 pb-14 pt-36 lg:grid-cols-[1.1fr_0.9fr] lg:pt-28 lg:pl-20">
           <div className="flex flex-col items-start">
-            <Reveal><Eyebrow>Сайты под любые направления</Eyebrow></Reveal>
+            <Reveal><Eyebrow>Сайты для малого и среднего бизнеса</Eyebrow></Reveal>
             <Reveal delay={0.05}>
               <h1 className="mt-7 text-[clamp(2.5rem,6vw,4.6rem)] font-extrabold leading-[1.02] tracking-[-0.03em]">
                 Один сайт, который ведёт клиента{" "}
                 <span className="relative whitespace-nowrap text-accent">
-                  до конца
+                  до кассы
                   <svg aria-hidden viewBox="0 0 200 12" className="absolute -bottom-1 left-0 w-full" fill="none"><path d="M2 8 C 50 2, 150 2, 198 7" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round" /></svg>
                 </span>
               </h1>
@@ -301,7 +388,7 @@ export default function SitePresentationLanding() {
             <Reveal delay={0.18}>
               <div className="mt-10 flex flex-wrap items-center gap-3">
                 <Magnetic href="#zayavka" variant="accent">Хочу бесплатный макет</Magnetic>
-                <Magnetic href="#contour" variant="ghost">Что это закрывает</Magnetic>
+                <Magnetic href="#contour" variant="ghost">Как это работает</Magnetic>
               </div>
             </Reveal>
             <Reveal delay={0.24}>
@@ -333,14 +420,14 @@ export default function SitePresentationLanding() {
               transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
               className="relative w-[18rem] rounded-[2rem] border border-white/10 bg-white/[0.03] p-1.5 shadow-[0_50px_90px_-30px_rgba(0,0,0,0.8)] sm:w-[22rem] lg:w-[24rem]"
             >
-              <Image src="/site/example-cafe.png" alt="Пример сайта: кофейня" width={1024} height={1024} priority className="h-auto w-full select-none rounded-[calc(2rem-0.375rem)]" />
+              <Image src="/site/example-cafe.png" alt="Пример сайта: кофейня" width={1024} height={1024} priority sizes="(min-width: 1024px) 384px, (min-width: 640px) 352px, 288px" className="h-auto w-full select-none rounded-[calc(2rem-0.375rem)]" />
             </motion.div>
           </Reveal>
         </Wrap>
       </section>
 
       {/* ── PROBLEM ── */}
-      <section id="problem" className="py-24 md:py-32 lg:pl-20">
+      <section id="problem" className="pb-20 pt-8 md:pb-28 md:pt-10 lg:pl-20">
         <Wrap>
           <Reveal><Eyebrow>Как сейчас</Eyebrow></Reveal>
           <div className="mt-8 grid grid-cols-1 gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
@@ -412,7 +499,7 @@ export default function SitePresentationLanding() {
             <Reveal delay={0.15} className="relative flex justify-center lg:justify-end">
               <div aria-hidden className="absolute inset-0 m-auto h-56 w-56 rounded-full bg-[radial-gradient(circle,color-mix(in_oklch,var(--accent),transparent_72%),transparent_66%)] blur-3xl" />
               <div className="relative w-full max-w-[23rem] overflow-hidden rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-1.5 shadow-[0_40px_80px_-34px_rgba(0,0,0,0.85)]">
-                <Image src="/site/insight-oneplace.png" alt="Всё в одном месте: меню, цены, услуги и запись" width={1024} height={1024} className="h-auto w-full rounded-[calc(1.6rem-0.375rem)]" />
+                <Image src="/site/insight-oneplace.png" alt="Всё в одном месте: меню, цены, услуги и запись" width={1024} height={1024} sizes="(min-width: 1024px) 368px, 90vw" className="h-auto w-full rounded-[calc(1.6rem-0.375rem)]" />
               </div>
             </Reveal>
           </div>
@@ -420,7 +507,7 @@ export default function SitePresentationLanding() {
       </section>
 
       {/* ── CONTOUR ── */}
-      <section id="contour" className="py-24 md:py-32 lg:pl-20">
+      <section id="contour" className="py-20 md:py-28 lg:pl-20">
         <Wrap>
           <Reveal><Eyebrow>Что я закрываю</Eyebrow></Reveal>
           <Reveal delay={0.05}>
@@ -445,7 +532,7 @@ export default function SitePresentationLanding() {
       </section>
 
       {/* ── FULL CYCLE ── */}
-      <section className="py-24 md:py-32 lg:pl-20">
+      <section className="py-20 md:py-24 lg:pl-20">
         <Wrap>
           <Reveal><Eyebrow>Полный цикл</Eyebrow></Reveal>
           <Reveal delay={0.05}>
@@ -460,7 +547,7 @@ export default function SitePresentationLanding() {
                   <div className="relative w-full max-w-[15rem]">
                     <span className="absolute -left-2 -top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-accent font-mono text-sm font-bold text-accent-foreground shadow-[0_0_18px_color-mix(in_oklch,var(--accent),transparent_55%)]">{i + 1}</span>
                     <div className="overflow-hidden rounded-[1.5rem] shadow-[0_40px_70px_-34px_rgba(0,0,0,0.9)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-1.5">
-                      <Image src={c.src} alt={c.cap} width={1024} height={1536} className="h-auto w-full" />
+                      <Image src={c.src} alt={c.cap} width={1024} height={1536} sizes="240px" className="h-auto w-full" />
                     </div>
                   </div>
                   <p className="max-w-[14rem] text-center text-[0.9rem] leading-relaxed text-muted-foreground">{c.cap}</p>
@@ -472,7 +559,7 @@ export default function SitePresentationLanding() {
       </section>
 
       {/* ── PROCESS (waypoints) ── */}
-      <section id="how" className="py-24 md:py-32 lg:pl-20">
+      <section id="how" className="pb-24 pt-12 md:pb-32 md:pt-16 lg:pl-20">
         <Wrap>
           <Reveal><Eyebrow>Как мы это сделаем</Eyebrow></Reveal>
           <Reveal delay={0.05}>
@@ -535,25 +622,43 @@ export default function SitePresentationLanding() {
               <h2 className="mt-6 text-[clamp(1.8rem,3.8vw,2.8rem)] font-bold leading-[1.06] tracking-[-0.02em]">Сайт — это база. Дальше подключаю автоматизацию.</h2>
               <p className="mt-5 max-w-md text-[1rem] leading-relaxed text-muted-foreground">Когда сайт уже <span className="font-semibold text-foreground">приводит клиентов</span> — можно <span className="font-semibold text-accent">снять с вас и рутину</span>. По желанию и по мере роста.</p>
             </Reveal>
-            <div className="flex flex-col divide-y divide-white/8 rounded-2xl border border-white/8">
-              {scope.map((s, i) => (
-                <Reveal key={s.title} delay={i * 0.08}>
-                  <div className="flex items-start gap-5 p-6 transition-colors duration-500 hover:bg-white/[0.02]">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/12 text-accent ring-1 ring-accent/20">{s.icon}</span>
-                    <div className="flex flex-col gap-1">
-                      <h3 className="text-lg font-semibold">{s.title}</h3>
-                      <p className="text-[0.9rem] leading-relaxed text-muted-foreground">{s.text}</p>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col divide-y divide-white/8 rounded-2xl border border-white/8">
+                {scope.map((s, i) => (
+                  <Reveal key={s.title} delay={i * 0.08}>
+                    <div className="flex items-start gap-5 p-6 transition-colors duration-500 hover:bg-white/[0.02]">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/12 text-accent ring-1 ring-accent/20">{s.icon}</span>
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-lg font-semibold">{s.title}</h3>
+                        <p className="text-[0.9rem] leading-relaxed text-muted-foreground">{s.text}</p>
+                      </div>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+              {/* the wildcard: any routine, built to order */}
+              <Reveal delay={0.24}>
+                <div className="relative overflow-hidden rounded-2xl border border-accent/30 bg-accent/[0.06] p-6">
+                  <div aria-hidden className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-[radial-gradient(circle,color-mix(in_oklch,var(--accent),transparent_70%),transparent_65%)] blur-2xl" />
+                  <div className="relative flex items-start gap-5">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground shadow-[0_0_18px_color-mix(in_oklch,var(--accent),transparent_55%)]"><Sparkle size={22} weight="fill" /></span>
+                    <div className="flex flex-col gap-1.5">
+                      <h3 className="text-lg font-semibold">Любая ваша рутина — <span className="text-accent">под ключ</span></h3>
+                      <p className="text-[0.9rem] leading-relaxed text-muted-foreground">Опишите задачу, которую делаете руками каждый день, — соберу под неё решение: бот, интеграцию, автоотчёт. Уникальная сборка под ваш процесс, а не коробка.</p>
+                      <a href="https://gabdra.pw" target="_blank" rel="noreferrer" className="mt-1 inline-flex w-max items-center gap-1.5 font-mono text-[0.72rem] uppercase tracking-[0.14em] text-accent underline-offset-4 hover:underline">
+                        Как я это делаю — gabdra.pw <ArrowUpRight size={13} weight="bold" />
+                      </a>
                     </div>
                   </div>
-                </Reveal>
-              ))}
+                </div>
+              </Reveal>
             </div>
           </div>
         </Wrap>
       </section>
 
       {/* ── EXAMPLES (horizontal scroll) ── */}
-      <section id="works" className="py-24 md:py-32">
+      <section id="works" className="py-20 md:py-28">
         <Wrap className="lg:pl-20">
           <Reveal><Eyebrow>Примеры под ниши</Eyebrow></Reveal>
           <Reveal delay={0.05}>
@@ -564,7 +669,7 @@ export default function SitePresentationLanding() {
           {mockups.map((m) => (
             <div key={m.label} className="group w-[16rem] shrink-0 snap-start sm:w-[18rem]">
               <div className="overflow-hidden rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-1.5">
-                <Image src={m.src} alt={`Пример сайта: ${m.label}`} width={1024} height={1024} className="h-auto w-full rounded-[calc(1.4rem-0.375rem)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]" />
+                <Image src={m.src} alt={`Пример сайта: ${m.label}`} width={1024} height={1024} sizes="(min-width: 640px) 288px, 256px" className="h-auto w-full rounded-[calc(1.4rem-0.375rem)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]" />
               </div>
               <div className="px-1.5 pt-4">
                 <h3 className="text-lg font-semibold">{m.label}</h3>
@@ -573,6 +678,46 @@ export default function SitePresentationLanding() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ── INTERACTIVE (bigger business) ── */}
+      <section id="interactive" className="border-y border-white/8 bg-white/[0.015] py-20 md:py-28 lg:pl-20">
+        <Wrap>
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-14">
+            <Reveal>
+              <Eyebrow>Если бизнес посложнее</Eyebrow>
+              <h2 className="mt-6 text-[clamp(1.9rem,4vw,3rem)] font-bold leading-[1.05] tracking-[-0.02em]">
+                <span className="text-accent">Интерактивные сайты</span> — когда одной страницы мало.
+              </h2>
+              <p className="mt-5 max-w-lg text-[1rem] leading-relaxed text-muted-foreground">
+                Ресторан на сто мест, торговый центр, производство с каталогом. Здесь клиент не просто читает — он <span className="font-semibold text-foreground">кликает по плану, выбирает, считает и бронирует</span> прямо на сайте.
+              </p>
+              <ul className="mt-7 flex flex-col gap-3">
+                {[
+                  "Кликабельные планы помещений — этажи, залы, столы, площади в аренду",
+                  "Каталоги с фильтрами и конфигураторы под ваш продукт",
+                  "Личный кабинет, оплата, документы",
+                  "Интеграции: 1С, CRM, YClients, телефония",
+                  "Админка — сами меняете цены, фото и наличие",
+                ].map((p) => (
+                  <li key={p} className="flex items-start gap-3">
+                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/12 text-accent ring-1 ring-accent/25"><Check size={12} weight="bold" /></span>
+                    <span className="text-[0.95rem] leading-relaxed text-foreground/90">{p}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 max-w-lg text-[0.95rem] leading-relaxed text-muted-foreground">
+                Цена — <span className="font-semibold text-foreground">по задаче</span>: называю фикс после короткого разговора, до старта. <span className="font-semibold text-accent">Как и всё у меня — без сюрпризов.</span>
+              </p>
+              <div className="mt-8">
+                <Magnetic href="#zayavka" variant="ghost">Обсудить сложный проект</Magnetic>
+              </div>
+            </Reveal>
+            <Reveal delay={0.12}>
+              <FloorplanDemo />
+            </Reveal>
+          </div>
+        </Wrap>
       </section>
 
       {/* ── PRICE + FORM ── */}

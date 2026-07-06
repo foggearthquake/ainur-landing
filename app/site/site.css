@@ -58,3 +58,10 @@
 a.text-accent-foreground {
   color: var(--accent-foreground);
 }
+
+/* The main gabdra.pw sets a light body background; on /site that shows up as
+   white edges and overscroll flashes around the dark page. Scope a dark body
+   bg to pages that render the /site root only (won't leak into gabdra.pw). */
+body:has([data-site-root]) {
+  background: oklch(0.155 0.008 265);
+}
