@@ -60,10 +60,14 @@ npm.cmd run bot:webhook:set
 
 1. В Vercel: `Project Settings -> Domains` добавьте домен `site.gabdra.pw`
    (и при желании `www.site.gabdra.pw`) к тому же проекту, что и `gabdra.pw`.
-2. В DNS добавьте запись `CNAME` для `site` → `cname.vercel-dns.com`
-   (или значение, которое Vercel покажет при добавлении домена).
+2. В DNS добавьте **A-запись** `site` → `76.76.21.21` (proxied OFF).
+   ⚠️ НЕ `CNAME` на `cname.vercel-dns.com`: он резолвится в ротирующийся anycast
+   Vercel (подсети `66.33.60.x` и др.), часть которого заблокирована в РФ —
+   сайт «не открывается без VPN». `76.76.21.21` — стабильный Vercel-IP, доступный
+   из РФ (тот же, что у apex `gabdra.pw`).
 3. Дождитесь выпуска SSL и проверьте, что `https://site.gabdra.pw` открывает
-   лендинг из `/site`, а корневой `https://gabdra.pw` работает как прежде.
+   лендинг из `/site` (без VPN, `remote_ip=76.76.21.21`), а корневой
+   `https://gabdra.pw` работает как прежде.
 
 Почта: на странице указан адрес `ainur@gabdra.pw` — ящик заведён на Beget,
 входящие дублируются в Telegram через почтовый мост Hermes (см. `_hermes/README.md`).
