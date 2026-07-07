@@ -94,8 +94,20 @@ function TreasureRoute({ progress }: { progress: MotionValue<number> }) {
     <div ref={ref} aria-hidden className="pointer-events-none absolute inset-y-0 left-0.5 z-40 w-6 sm:left-2 lg:left-4 lg:w-10 xl:left-8">
       {h > 0 && (
         <>
+          {/* no CSS filters here: a drop-shadow on a page-tall SVG forces the
+              browser to recompute a giant filter surface on every repaint
+              (measured 1–2fps). Glow is faked with a wide translucent stroke. */}
           <svg viewBox={`0 0 40 ${h}`} preserveAspectRatio="none" fill="none" className="h-full w-full">
-            <path d={buildRoutePath(h)} stroke="var(--accent)" strokeOpacity="0.5" strokeWidth="2.6" strokeDasharray="3 14" strokeLinecap="round" vectorEffect="non-scaling-stroke" className="[filter:drop-shadow(0_0_3px_color-mix(in_oklch,var(--accent),transparent_45%))]" />
+            <path d={buildRoutePath(h)} stroke="var(--accent)" strokeOpacity="0.5" strokeWidth="2.6" strokeDasharray="3 14" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+            <motion.path
+              d={buildRoutePath(h)}
+              stroke="var(--accent)"
+              strokeOpacity="0.16"
+              strokeWidth="9"
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+              style={{ pathLength: progress }}
+            />
             <motion.path
               d={buildRoutePath(h)}
               stroke="var(--accent)"
@@ -103,23 +115,41 @@ function TreasureRoute({ progress }: { progress: MotionValue<number> }) {
               strokeLinecap="round"
               vectorEffect="non-scaling-stroke"
               style={{ pathLength: progress }}
-              className="[filter:drop-shadow(0_0_7px_color-mix(in_oklch,var(--accent),transparent_25%))]"
             />
           </svg>
           <motion.div
             style={{ top: cometTop }}
             className="absolute left-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_22px_6px_color-mix(in_oklch,var(--accent),transparent_38%)]"
           />
-          {/* X marks the spot — generated treasure-map cross; sits where the route ends */}
-          <motion.div
-            className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2"
+          {/* X marks the spot — hand-brushed pirate cross where the route ends.
+              Vector strokes roughened with a turbulence displacement so it reads
+              as dry-brush paint, stays crisp at any DPI and exactly on-palette. */}
+          <div
+            className="absolute left-[34px] -translate-x-1/2 -translate-y-1/2 -rotate-3 lg:left-1/2"
             style={{ top: h - ROUTE_END_OFFSET }}
-            animate={{ scale: [1, 1.06, 1] }}
-            transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/site/cross.png" alt="" className="h-12 w-12 max-w-none lg:h-[82px] lg:w-[82px]" />
-          </motion.div>
+            {/* cheap pulse ring; the filtered X itself stays static so the
+                turbulence filter rasterizes once (animating it costs ~60fps) */}
+            <span aria-hidden className="absolute inset-1 animate-ping rounded-full border border-accent/40 [animation-duration:2.6s]" />
+            <svg viewBox="0 0 100 100" className="h-14 w-14 max-w-none [filter:drop-shadow(0_0_16px_color-mix(in_oklch,var(--accent),transparent_40%))] lg:h-[96px] lg:w-[96px]">
+              <defs>
+                <filter id="brush-x" x="-20%" y="-20%" width="140%" height="140%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.09 0.13" numOctaves="3" seed="7" result="noise" />
+                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="9" />
+                </filter>
+              </defs>
+              <g filter="url(#brush-x)" stroke="var(--accent)" strokeLinecap="round" fill="none">
+                {/* main slashes — tapered by layering */}
+                <path d="M22 24 C 38 40, 62 62, 79 78" strokeWidth="11" />
+                <path d="M78 22 C 62 39, 40 61, 21 79" strokeWidth="11" />
+                {/* dry-brush flicks off the stroke ends */}
+                <path d="M18 18 C 24 24, 28 28, 33 34" strokeWidth="4.5" strokeOpacity="0.85" />
+                <path d="M68 68 C 73 73, 78 77, 84 84" strokeWidth="4.5" strokeOpacity="0.85" />
+                <path d="M83 17 C 77 23, 73 27, 68 33" strokeWidth="4.5" strokeOpacity="0.85" />
+                <path d="M32 68 C 27 73, 22 78, 16 83" strokeWidth="4.5" strokeOpacity="0.85" />
+              </g>
+            </svg>
+          </div>
         </>
       )}
     </div>
@@ -284,6 +314,66 @@ function Wrap({ children, className }: { children: ReactNode; className?: string
   return <div className={`mx-auto w-full max-w-6xl px-5 sm:px-8 ${className ?? ""}`}>{children}</div>;
 }
 
+/* ── live mini-site in the hero phone: real markup, not a picture ──
+   Shows the actual product: a tiny dark cafe one-pager with prices, a CTA
+   and a booking notification that keeps flying in — «заявка падает вам». */
+function PhoneDemo() {
+  const menu = [
+    { name: "Капучино", price: "220 ₽" },
+    { name: "Круассан с лососем", price: "340 ₽" },
+    { name: "Завтрак до 12:00", price: "390 ₽" },
+  ];
+  return (
+    <div className="relative w-full select-none rounded-[2.4rem] bg-[oklch(0.21_0.009_265)] p-[7px] ring-1 ring-white/15">
+      {/* notch */}
+      <div className="absolute left-1/2 top-[16px] z-20 h-[9px] w-16 -translate-x-1/2 rounded-full bg-black/80" />
+      <div className="relative flex flex-col overflow-hidden rounded-[2rem] bg-background ring-1 ring-white/8">
+        {/* mini header */}
+        <div className="flex items-center justify-between px-4 pb-2.5 pt-8">
+          <span className="text-[0.82rem] font-bold tracking-tight">Зёрна<span className="text-accent">.</span></span>
+          <span className="flex flex-col gap-[3px]"><span className="h-[2px] w-4 rounded bg-white/50" /><span className="h-[2px] w-4 rounded bg-white/50" /></span>
+        </div>
+        {/* mini hero */}
+        <div className="relative mx-3 overflow-hidden rounded-xl bg-[radial-gradient(circle_at_70%_20%,color-mix(in_oklch,var(--accent),transparent_78%),transparent_60%),linear-gradient(160deg,oklch(0.24_0.01_265),oklch(0.18_0.008_265))] px-3.5 pb-3.5 pt-5">
+          <p className="text-[0.92rem] font-bold leading-tight">Кофейня у вашего дома</p>
+          <p className="mt-1 text-[0.62rem] leading-snug text-muted-foreground">Завтраки с 8:00 · свежая выпечка · столики у окна</p>
+          <span className="mt-2.5 inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[0.6rem] font-bold text-accent-foreground">Меню и цены <ArrowRight size={9} weight="bold" /></span>
+        </div>
+        {/* menu with prices */}
+        <div className="mx-3 mt-2.5 flex flex-col divide-y divide-white/6 rounded-xl border border-white/8">
+          {menu.map((m) => (
+            <div key={m.name} className="flex items-center justify-between px-3 py-2">
+              <span className="text-[0.68rem] text-foreground/90">{m.name}</span>
+              <span className="font-mono text-[0.66rem] font-semibold text-accent">{m.price}</span>
+            </div>
+          ))}
+        </div>
+        {/* booking CTA */}
+        <div className="p-3">
+          <div className="flex items-center justify-center gap-1.5 rounded-full bg-accent py-2.5 text-[0.72rem] font-bold text-accent-foreground">
+            <CalendarCheck size={13} weight="bold" /> Забронировать столик
+          </div>
+          <p className="pt-2 text-center font-mono text-[0.5rem] uppercase tracking-[0.16em] text-faint">ул. Пример, 12 · 8:00–22:00</p>
+        </div>
+        {/* the lead flying in: the whole promise in one animation */}
+        <motion.div
+          initial={{ y: -84, opacity: 0 }}
+          animate={{ y: [-84, 0, 0, 0, -84], opacity: [0, 1, 1, 1, 0] }}
+          transition={{ duration: 5.2, times: [0, 0.12, 0.5, 0.88, 1], repeat: Infinity, repeatDelay: 2.6, ease: "easeInOut", delay: 1.2 }}
+          className="absolute inset-x-2.5 top-7 z-10 flex items-start gap-2.5 rounded-2xl border border-accent/30 bg-[oklch(0.23_0.01_265/0.97)] p-3 shadow-[0_16px_40px_-10px_rgba(0,0,0,0.9)] backdrop-blur"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground"><BellRinging size={15} weight="fill" /></span>
+          <span className="flex flex-col gap-0.5">
+            <span className="text-[0.68rem] font-bold leading-none">Новая заявка</span>
+            <span className="text-[0.62rem] leading-snug text-muted-foreground">Столик на двоих · сегодня, 19:00</span>
+            <span className="font-mono text-[0.5rem] uppercase tracking-[0.14em] text-accent">→ упала вам в Telegram</span>
+          </span>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
 /* ── interactive floor plan demo: real hotspots over the generated plan ── */
 const planSpots = [
   { x: 74, y: 46, title: "Зал у окна", sub: "8 столов · сегодня свободно", cta: "Забронировать" },
@@ -418,9 +508,9 @@ export default function SitePresentationLanding() {
               initial={{ rotate: 2 }}
               animate={{ y: [0, -12, 0], rotate: [2, 0, 2] }}
               transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-              className="relative w-[18rem] rounded-[2rem] border border-white/10 bg-white/[0.03] p-1.5 shadow-[0_50px_90px_-30px_rgba(0,0,0,0.8)] sm:w-[22rem] lg:w-[24rem]"
+              className="relative w-[16.5rem] shadow-[0_50px_90px_-30px_rgba(0,0,0,0.8)] sm:w-[18rem] lg:w-[19rem]"
             >
-              <Image src="/site/example-cafe.png" alt="Пример сайта: кофейня" width={1024} height={1024} priority sizes="(min-width: 1024px) 384px, (min-width: 640px) 352px, 288px" className="h-auto w-full select-none rounded-[calc(2rem-0.375rem)]" />
+              <PhoneDemo />
             </motion.div>
           </Reveal>
         </Wrap>
