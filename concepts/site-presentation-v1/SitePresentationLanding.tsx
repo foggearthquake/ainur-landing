@@ -424,6 +424,131 @@ function FloorplanDemo() {
   );
 }
 
+/* ── glass mascot that walks the treasure route as you scroll ──
+   4 pre-rendered clips (walk / notice / glow / float) on a pure-black bg;
+   the black is dropped with mix-blend-mode:screen so the glowing glass reads
+   natively over the dark site. Position + state are driven by the same scroll
+   progress as the route; the clip is never scrubbed (video seek is janky) —
+   we only cross-fade between the four looping clips and move the element with
+   a GPU transform. */
+const MASCOT_SRC = {
+  float: "/site/mascot/float.webm",
+  notice: "/site/mascot/notice.webm",
+  glow: "/site/mascot/glow.webm",
+} as const;
+type MState = keyof typeof MASCOT_SRC;
+
+function Mascot({ progress }: { progress: MotionValue<number> }) {
+  const [state, setState] = useState<MState>("float");
+  const [on, setOn] = useState(false);
+  const stateRef = useRef<MState>("float");
+  const noticeUntil = useRef(0);
+  const noticeCooldownUntil = useRef(0);
+  const vids = useRef<Partial<Record<MState, HTMLVideoElement | null>>>({});
+
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const sx = useSpring(x, { stiffness: 90, damping: 24 });
+  const sy = useSpring(y, { stiffness: 90, damping: 24 });
+
+  const set = (s: MState) => {
+    if (stateRef.current !== s) { stateRef.current = s; setState(s); }
+  };
+
+  useEffect(() => {
+    const step = (p: number) => {
+      setOn(true); // always present — parked on the hero, then walks the journey
+      const vw = window.innerWidth || 1200;
+      const vh = window.innerHeight || 800;
+      const mw = vw < 640 ? 76 : vw < 1024 ? 96 : 116; // mascot footprint
+      const goal = p > 0.93;
+      const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+      // hero rest pose: hovers on the right, just above the phone panel
+      const parkX = (vw < 1024 ? 0.62 : 0.72) * (vw - mw);
+      const parkY = vh * (vw < 1024 ? 0.24 : 0.19);
+      // travelling: a slow, wide drift across the screen (few, gentle direction changes)
+      const roamX = (0.5 + 0.42 * Math.sin(p * Math.PI * 3)) * (vw - mw);
+      const roamY = Math.min(vh * 0.15 + vh * 0.6 * p, vh - mw - 60);
+      const b = Math.min(p / 0.12, 1); // 0 = parked on hero → 1 = fully roaming by 12% scrolled
+      x.set(goal ? 0.5 * (vw - mw) : lerp(parkX, roamX, b));
+      y.set(goal ? vh - mw - 60 : lerp(parkY, roamY, b));
+      // one calm idle clip everywhere; only glance (notice) occasionally, glow at the end
+      if (goal) return set("glow");
+      if (performance.now() < noticeUntil.current) return set("notice");
+      set("float");
+    };
+    const unsub = progress.on("change", step);
+    const reposition = () => step(progress.get());
+    reposition();
+    const raf = requestAnimationFrame(reposition); // re-place once layout/viewport is known
+    window.addEventListener("resize", reposition);
+    const iv = window.setInterval(() => {
+      // drop back to the idle float once a glance has elapsed (covers scroll-stopped case)
+      if (stateRef.current === "notice" && performance.now() >= noticeUntil.current) set("float");
+    }, 300);
+    return () => {
+      unsub();
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", reposition);
+      window.clearInterval(iv);
+    };
+  }, [progress, x, y]);
+
+  // turn to "notice" a section when it crosses the viewport centre
+  useEffect(() => {
+    const secs = document.querySelectorAll("[data-site-root] section");
+    if (!secs.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const p = progress.get();
+        if (p < 0.1 || p > 0.9) return;
+        const now = performance.now();
+        if (now < noticeCooldownUntil.current) return; // don't glance again too soon
+        if (entries.some((e) => e.isIntersecting)) {
+          noticeUntil.current = now + 2000; // hold the glance ~2s
+          noticeCooldownUntil.current = now + 7000; // …then stay idle a while
+          if (stateRef.current !== "glow") set("notice");
+        }
+      },
+      { rootMargin: "-45% 0px -45% 0px" },
+    );
+    secs.forEach((s) => io.observe(s));
+    return () => io.disconnect();
+  }, [progress]);
+
+  useEffect(() => {
+    (Object.keys(MASCOT_SRC) as MState[]).forEach((k) => {
+      const v = vids.current[k];
+      if (!v) return;
+      if (on && k === state) v.play().catch(() => {});
+      else v.pause();
+    });
+  }, [state, on]);
+
+  return (
+    <motion.div
+      aria-hidden
+      style={{ x: sx, y: sy }}
+      className={`pointer-events-none fixed left-0 top-0 z-[45] transition-opacity duration-700 ${on ? "opacity-100" : "opacity-0"}`}
+    >
+      <div className="relative w-[76px] sm:w-[96px] lg:w-[116px]" style={{ aspectRatio: "360 / 428" }}>
+        {(Object.keys(MASCOT_SRC) as MState[]).map((k) => (
+          <video
+            key={k}
+            ref={(el) => { vids.current[k] = el; }}
+            src={MASCOT_SRC[k]}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${state === k ? "opacity-100" : "opacity-0"}`}
+          />
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
 export default function SitePresentationLanding() {
   const rootRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll();
@@ -432,6 +557,7 @@ export default function SitePresentationLanding() {
     <div ref={rootRef} data-site-root className="relative overflow-clip" id="top">
       <Grain />
       <TreasureRoute progress={scrollYProgress} />
+      <Mascot progress={scrollYProgress} />
 
       {/* soft accent glows, restrained */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
@@ -442,7 +568,7 @@ export default function SitePresentationLanding() {
       {/* ── nav ── */}
       <nav className="fixed inset-x-0 top-5 z-50 mx-auto flex w-max items-center gap-2 rounded-full border border-white/10 bg-background/70 py-2 pl-5 pr-2 backdrop-blur-xl">
         <a href="#top" className="text-[1.02rem] font-bold tracking-tight">
-          Айнур<span className="text-accent">.</span>
+          ainur<span className="text-accent">.</span>
         </a>
         <a href="#zayavka" className="group ml-3 inline-flex items-center gap-2 rounded-full bg-accent py-2 pl-4 pr-2 text-sm font-semibold text-accent-foreground transition-transform duration-300 active:scale-95">
           Бесплатный макет
@@ -865,7 +991,7 @@ export default function SitePresentationLanding() {
             </div>
           </Reveal>
           <div className="mt-16 flex flex-wrap items-center justify-between gap-4 border-t border-white/8 pt-8 font-mono text-[0.74rem] text-faint">
-            <span>© 2026 Айнур Габдраупов · сайты под любые направления</span>
+            <span>© 2026 ainur. · сайты под любые направления</span>
             <div className="flex gap-5">
               <a href="https://gabdra.pw" target="_blank" rel="noreferrer" className="transition-colors hover:text-foreground">gabdra.pw</a>
               <a href="/privacy" className="transition-colors hover:text-foreground">Политика</a>

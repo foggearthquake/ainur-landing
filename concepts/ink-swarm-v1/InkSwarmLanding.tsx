@@ -289,7 +289,7 @@ export default function InkSwarmLanding() {
         <footer className={styles.footer}>
           <div className={styles.footerInner}>
             <div className={styles.footerMeta}>
-              <span>© 2026 Айнур Габдраупов</span>
+              <span>© 2026 ainur.</span>
               <span>·</span>
               <span>Москва</span>
               <span>·</span>
@@ -325,20 +325,17 @@ export default function InkSwarmLanding() {
             {panel === "about" ? (
               <>
                 <div className={styles.panelHead}>
-                  <img className={styles.avatar} src="/ainur-avatar.jpeg" alt="Айнур Габдраупов" />
+                  <img className={styles.avatar} src="/ainur-avatar.jpeg" alt="ainur" />
                   <div>
                     <div className={styles.panelKicker}>Обо мне</div>
-                    <h2 className={styles.panelTitle}>Айнур Габдраупов</h2>
+                    <h2 className={styles.panelTitle}>ainur</h2>
                   </div>
                 </div>
+                <p>Я люблю момент, когда идея перестаёт быть только идеей.</p>
                 <p>
-                  В прошлом - инженер-технолог в нефтегазе. Привычка осталась: считаю заранее и
-                  собираю так, чтобы держало нагрузку и работало спустя год.
-                </p>
-                <p>
-                  Последние два года - в цифре. Сейчас делаю AI-разработку и автоматизацию сам,
-                  руками: идея, код, рабочий продукт. Инженерное чутьё подсказывает, что реально
-                  собрать за разумные деньги, а что останется красивым слайдом.
+                  Последние два года я создаю цифровые продукты и работаю с AI — от первых
+                  набросков до работающих систем. Самое интересное для меня начинается там, где
+                  из мысли, которой ещё нет, постепенно появляется что-то настоящее.
                 </p>
               </>
             ) : (

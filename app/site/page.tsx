@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import SitePresentationLanding from "@/concepts/site-presentation-v1/SitePresentationLanding";
 
 export const metadata: Metadata = {
-  title: "Сайт для вашего бизнеса за 5–7 дней — Айнур Габдраупов",
+  title: "Сайт для вашего бизнеса за 5–7 дней",
   description:
     "Делаю сайты для малого бизнеса: кафе, салонов, автосервисов. Одна страница, которая собирает все заявки в одно место. 10 000–15 000 ₽, срок 5–7 дней. Бесплатный макет за 1–2 дня.",
   alternates: { canonical: "https://site.gabdra.pw" },

@@ -2,6 +2,7 @@ import Script from "next/script";
 import type { Metadata } from "next";
 import { Sora, JetBrains_Mono } from "next/font/google";
 import Providers from "./providers";
+import CookieNotice from "./CookieNotice";
 
 import "./globals.css";
 
@@ -27,14 +28,14 @@ const DOMAIN = "https://gabdra.pw";
 export const metadata: Metadata = {
   metadataBase: new URL(DOMAIN),
   title: {
-    default: "Айнур Габдраупов — AI-системы и автоматизации под задачи бизнеса",
-    template: "%s | Айнур Габдраупов",
+    default: "ainur. — AI-системы и автоматизации под задачи бизнеса",
+    template: "%s | ainur.",
   },
   description:
     "Инженер из нефтегаза, делаю AI-разработку и автоматизацию сам. Боты и ассистенты на своей базе знаний, RAG поверх документов и каталогов, автоматизация рутины, продуктовые MVP — от идеи до рабочего продукта.",
   keywords: [
     // Бренд
-    "Айнур Габдраупов", "ainur", "gabdra",
+    "ainur", "gabdra", "ainur gabdra",
     // AI и автоматизация
     "AI-системы", "AI-автоматизация", "AI решения для бизнеса", "внедрение AI",
     "автоматизация бизнес-процессов", "автоматизация рутины",
@@ -43,20 +44,20 @@ export const metadata: Metadata = {
     "Telegram-бот на заказ", "чат-бот для бизнеса", "разработка под задачу",
     "MVP разработка", "цифровые решения для бизнеса",
   ],
-  authors: [{ name: "Айнур Габдраупов", url: DOMAIN }],
-  creator: "Айнур Габдраупов",
+  authors: [{ name: "ainur.", url: DOMAIN }],
+  creator: "ainur.",
   openGraph: {
     type: "website",
     locale: "ru_RU",
     url: DOMAIN,
-    siteName: "Айнур Габдраупов",
-    title: "Айнур Габдраупов — AI-системы и автоматизации",
+    siteName: "ainur.",
+    title: "ainur. — AI-системы и автоматизации",
     description:
       "Делаю AI-разработку и автоматизацию сам: боты и ассистенты, RAG поверх документов и каталогов, автоматизация рутины, продуктовые MVP. От идеи до рабочего продукта.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Айнур Габдраупов — AI-системы и автоматизации",
+    title: "ainur. — AI-системы и автоматизации",
     description: "Боты, RAG поверх документов, автоматизация рутины, продуктовые MVP — от идеи до рабочего продукта.",
   },
   robots: {
@@ -95,7 +96,7 @@ export default function RootLayout({
               "@graph": [
                 {
                   "@type": "Person",
-                  name: "Айнур Габдраупов",
+                  name: "ainur",
                   url: "https://gabdra.pw",
                   image: "https://gabdra.pw/ainur-avatar.jpeg",
                   jobTitle: "AI-разработчик, инженер",
@@ -115,13 +116,13 @@ export default function RootLayout({
                 {
                   "@type": "WebSite",
                   url: "https://gabdra.pw",
-                  name: "Айнур Габдраупов — AI-системы и автоматизации",
+                  name: "ainur. — AI-системы и автоматизации",
                   inLanguage: "ru",
                 },
                 {
                   "@type": "Service",
                   serviceType: "AI-системы и автоматизации",
-                  provider: { "@type": "Person", name: "Айнур Габдраупов" },
+                  provider: { "@type": "Person", name: "ainur" },
                   areaServed: { "@type": "Country", name: "Russia" },
                   hasOfferCatalog: {
                     "@type": "OfferCatalog",
@@ -167,6 +168,7 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>{children}</Providers>
+        <CookieNotice />
 
         {/* Яндекс.Метрика */}
         <Script id="ym-init" strategy="afterInteractive">
