@@ -460,18 +460,26 @@ function Mascot({ progress }: { progress: MotionValue<number> }) {
       setOn(true); // always present — parked on the hero, then walks the journey
       const vw = window.innerWidth || 1200;
       const vh = window.innerHeight || 800;
-      const mw = vw < 640 ? 76 : vw < 1024 ? 96 : 116; // mascot footprint
       const goal = p > 0.93;
+      // Below lg the page is one column, so anything roaming across it lands on the copy
+      // (it used to sit right on top of the H1). There, dock it in the corner instead.
+      const compact = vw < 1024;
+      const mw = compact ? 54 : 116; // footprint — keep in sync with the width classes below
       const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-      // hero rest pose: hovers on the right, just above the phone panel
-      const parkX = (vw < 1024 ? 0.62 : 0.72) * (vw - mw);
-      const parkY = vh * (vw < 1024 ? 0.24 : 0.19);
-      // travelling: a slow, wide drift across the screen (few, gentle direction changes)
-      const roamX = (0.5 + 0.42 * Math.sin(p * Math.PI * 3)) * (vw - mw);
-      const roamY = Math.min(vh * 0.15 + vh * 0.6 * p, vh - mw - 60);
-      const b = Math.min(p / 0.12, 1); // 0 = parked on hero → 1 = fully roaming by 12% scrolled
-      x.set(goal ? 0.5 * (vw - mw) : lerp(parkX, roamX, b));
-      y.set(goal ? vh - mw - 60 : lerp(parkY, roamY, b));
+      if (compact) {
+        x.set(vw - mw - 14); // hugs the right edge, clear of the reading column
+        y.set(vh - mw - 96 + Math.sin(p * Math.PI * 8) * 10); // low corner + a soft bob
+      } else {
+        // hero rest pose: hovers on the right, just above the phone panel
+        const parkX = 0.72 * (vw - mw);
+        const parkY = vh * 0.19;
+        // travelling: a slow, wide drift across the screen (few, gentle direction changes)
+        const roamX = (0.5 + 0.42 * Math.sin(p * Math.PI * 3)) * (vw - mw);
+        const roamY = Math.min(vh * 0.15 + vh * 0.6 * p, vh - mw - 60);
+        const b = Math.min(p / 0.12, 1); // 0 = parked on hero → 1 = fully roaming by 12% scrolled
+        x.set(goal ? 0.5 * (vw - mw) : lerp(parkX, roamX, b));
+        y.set(goal ? vh - mw - 60 : lerp(parkY, roamY, b));
+      }
       // one calm idle clip everywhere; only glance (notice) occasionally, glow at the end
       if (goal) return set("glow");
       if (performance.now() < noticeUntil.current) return set("notice");
@@ -531,7 +539,7 @@ function Mascot({ progress }: { progress: MotionValue<number> }) {
       style={{ x: sx, y: sy }}
       className={`pointer-events-none fixed left-0 top-0 z-[45] transition-opacity duration-700 ${on ? "opacity-100" : "opacity-0"}`}
     >
-      <div className="relative w-[76px] sm:w-[96px] lg:w-[116px]" style={{ aspectRatio: "360 / 428" }}>
+      <div className="relative w-[54px] lg:w-[116px]" style={{ aspectRatio: "360 / 428" }}>
         {(Object.keys(MASCOT_SRC) as MState[]).map((k) => (
           <video
             key={k}
