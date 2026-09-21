@@ -537,7 +537,7 @@ function Mascot({ progress }: { progress: MotionValue<number> }) {
     <motion.div
       aria-hidden
       style={{ x: sx, y: sy }}
-      className={`pointer-events-none fixed left-0 top-0 z-[45] transition-opacity duration-700 ${on ? "opacity-100" : "opacity-0"}`}
+      className={`pointer-events-none fixed left-0 top-0 z-[45] transition-opacity duration-700 ${on ? "opacity-55 lg:opacity-80" : "opacity-0"}`}
     >
       <div className="relative w-[54px] lg:w-[116px]" style={{ aspectRatio: "360 / 428" }}>
         {(Object.keys(MASCOT_SRC) as MState[]).map((k) => (
