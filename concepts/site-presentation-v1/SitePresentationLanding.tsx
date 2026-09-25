@@ -425,17 +425,26 @@ function FloorplanDemo() {
 }
 
 /* ── glass mascot that walks the treasure route as you scroll ──
-   4 pre-rendered clips (walk / notice / glow / float) on a pure-black bg;
-   the black is dropped with mix-blend-mode:screen so the glowing glass reads
-   natively over the dark site. Position + state are driven by the same scroll
-   progress as the route; the clip is never scrubbed (video seek is janky) —
-   we only cross-fade between the four looping clips and move the element with
-   a GPU transform. */
+   3 pre-rendered clips (float / notice / glow) with a real alpha channel, so the
+   glass composites cleanly over the dark site. Position + state are driven by the
+   same scroll progress as the route; clips are never scrubbed (video seek is janky) —
+   we only cross-fade between the looping clips and move the element with a GPU
+   transform. */
 const MASCOT_SRC = {
-  float: "/site/mascot/float.webm",
-  notice: "/site/mascot/notice.webm",
-  glow: "/site/mascot/glow.webm",
-} as const;
+  float: "/site/mascot/float",
+  notice: "/site/mascot/notice",
+  glow: "/site/mascot/glow",
+} as const; // base paths; ".webm" (VP9 + alpha) or ".webp" (animated, alpha) is appended per browser
+
+/* WebKit — every iOS browser and desktop Safari — decodes VP9 but drops its alpha
+   channel, so the WebM clips show up inside a black box there. Those browsers get
+   animated WebP instead, which carries alpha and works since iOS 14 / Safari 14. */
+function webkitWithoutVideoAlpha() {
+  const ua = navigator.userAgent;
+  const iOS = /iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const safari = /Safari\//.test(ua) && !/Chrome|Chromium|CriOS|Edg|OPR|YaBrowser|Firefox|FxiOS|Android/.test(ua);
+  return iOS || safari;
+}
 type MState = keyof typeof MASCOT_SRC;
 
 function Mascot({ progress }: { progress: MotionValue<number> }) {
@@ -445,6 +454,16 @@ function Mascot({ progress }: { progress: MotionValue<number> }) {
   const noticeUntil = useRef(0);
   const noticeCooldownUntil = useRef(0);
   const vids = useRef<Partial<Record<MState, HTMLVideoElement | null>>>({});
+  // null until mounted: which format works depends on the browser, and SSR can't know it
+  const [media, setMedia] = useState<"video" | "img" | null>(null);
+  // WebP clips all download at once, so the ones only needed after scrolling wait
+  // until the page has settled (the <video> path gets this for free via preload=metadata)
+  const [extraClips, setExtraClips] = useState(false);
+  useEffect(() => {
+    setMedia(webkitWithoutVideoAlpha() ? "img" : "video");
+    const t = window.setTimeout(() => setExtraClips(true), 2500);
+    return () => window.clearTimeout(t);
+  }, []);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -531,27 +550,40 @@ function Mascot({ progress }: { progress: MotionValue<number> }) {
       if (on && k === state) v.play().catch(() => {});
       else v.pause();
     });
-  }, [state, on]);
+  }, [state, on, media]);
 
   return (
     <motion.div
       aria-hidden
       style={{ x: sx, y: sy }}
-      className={`pointer-events-none fixed left-0 top-0 z-[45] transition-opacity duration-700 ${on ? "opacity-55 lg:opacity-80" : "opacity-0"}`}
+      className={`pointer-events-none fixed left-0 top-0 z-[45] transition-opacity duration-700 ${on ? "opacity-100" : "opacity-0"}`}
     >
       <div className="relative w-[54px] lg:w-[116px]" style={{ aspectRatio: "360 / 428" }}>
-        {(Object.keys(MASCOT_SRC) as MState[]).map((k) => (
-          <video
-            key={k}
-            ref={(el) => { vids.current[k] = el; }}
-            src={MASCOT_SRC[k]}
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${state === k ? "opacity-100" : "opacity-0"}`}
-          />
-        ))}
+        {media === "video" &&
+          (Object.keys(MASCOT_SRC) as MState[]).map((k) => (
+            <video
+              key={k}
+              ref={(el) => { vids.current[k] = el; }}
+              src={`${MASCOT_SRC[k]}.webm`}
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${state === k ? "opacity-100" : "opacity-0"}`}
+            />
+          ))}
+        {media === "img" &&
+          (Object.keys(MASCOT_SRC) as MState[]).filter((k) => k === "float" || extraClips).map((k) => (
+            // eslint-disable-next-line @next/next/no-img-element -- animated WebP; next/image adds nothing here
+            <img
+              key={k}
+              src={`${MASCOT_SRC[k]}.webp`}
+              alt=""
+              draggable={false}
+              decoding="async"
+              className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${state === k ? "opacity-100" : "opacity-0"}`}
+            />
+          ))}
       </div>
     </motion.div>
   );
