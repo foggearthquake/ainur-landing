@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// site.gabdra.pw serves a separate landing (cold-outreach asset for small
-// business). Everything else — gabdra.pw and its own paths — passes through
-// untouched.
-const SITE_HOSTS = new Set(["site.gabdra.pw", "www.site.gabdra.pw"]);
+// Subdomains that each serve their own landing from a route of this app:
+// site.gabdra.pw — small-business sites, ai.gabdra.pw — AI systems. gabdra.pw
+// itself is the hub linking all directions, and passes through untouched.
+const HOST_ROUTES: Record<string, string> = {
+  "site.gabdra.pw": "/site",
+  "www.site.gabdra.pw": "/site",
+  "ai.gabdra.pw": "/ai",
+  "www.ai.gabdra.pw": "/ai",
+};
 
 export function middleware(request: NextRequest) {
   const host = (request.headers.get("host") || "").split(":")[0].toLowerCase();
+  const route = HOST_ROUTES[host];
 
-  if (SITE_HOSTS.has(host)) {
-    const { pathname } = request.nextUrl;
-    // Only rewrite the root so /api, /privacy, assets, etc. still resolve.
-    if (pathname === "/") {
-      return NextResponse.rewrite(new URL("/site", request.url));
-    }
+  // Only rewrite the root so /api, /privacy, assets, etc. still resolve.
+  if (route && request.nextUrl.pathname === "/") {
+    return NextResponse.rewrite(new URL(route, request.url));
   }
 
   return NextResponse.next();
