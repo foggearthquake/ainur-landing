@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope, Playfair_Display } from "next/font/google";
-import HubLanding from "@/concepts/hub-v1/HubLanding";
+import HubLanding from "@/concepts/hub-v2/HubLanding";
 
 // Cyrillic-capable and self-hosted at build time (loads in RU without VPN)
 const manrope = Manrope({
@@ -9,10 +9,10 @@ const manrope = Manrope({
   variable: "--font-hub",
   display: "swap",
 });
-// serif half of the minimax-style title: "ainur" in grotesque, the direction in serif
+// bold serif line under the card, as in MiniMax H3
 const playfair = Playfair_Display({
   subsets: ["latin", "cyrillic"],
-  weight: ["500"],
+  weight: ["700"],
   variable: "--font-hub-serif",
   display: "swap",
 });

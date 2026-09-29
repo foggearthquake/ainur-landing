@@ -1,0 +1,451 @@
+/* one screen, MiniMax H3 layout: title → card → serif line → two outline buttons → story bars */
+.root {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  background: #5f8f7a;
+  color: #fff;
+  font-family: var(--font-hub), system-ui, sans-serif;
+  touch-action: pan-y; /* horizontal swipes belong to the stories */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── background ── */
+.bg {
+  position: absolute;
+  inset: 0;
+}
+
+.bgLayer {
+  position: absolute;
+  inset: 0;
+  background: var(--land) center / cover no-repeat;
+  transition: opacity 0.9s ease;
+}
+
+.bgVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* the lower part of the fog is the palest: a breath of shade keeps the buttons readable */
+.bgShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), transparent 25%, transparent 55%, rgba(0, 0, 0, 0.16));
+}
+
+/* ── menu ── */
+.nav {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px clamp(18px, 4vw, 48px);
+}
+
+.logo {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+}
+
+.navCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  transition: background 0.3s;
+}
+
+.navCta:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* ── stage ── */
+.stage {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 clamp(16px, 4vw, 40px) 64px;
+  text-align: center;
+}
+
+.title {
+  margin: 0 0 clamp(16px, 2.6vh, 28px);
+  font-size: clamp(42px, min(6.4vw, 9vh), 92px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  text-shadow: 0 2px 28px rgba(0, 0, 0, 0.14);
+}
+
+/* light translucent frame around the clip, as in H3 */
+.cardFrame {
+  width: min(800px, 100%, calc((100svh - 420px) * 16 / 9));
+  min-width: min(300px, 100%);
+  padding: 8px;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.26);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 30px 70px -40px rgba(0, 0, 0, 0.45);
+}
+
+.card {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 19px;
+  overflow: hidden;
+  background: #0f2a22;
+  container-type: inline-size;
+}
+
+.cardVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.8s ease;
+}
+
+/* AI-креатив: the flight passes through worlds — magenta → violet → coral → amber */
+.worlds {
+  animation: worlds 22s ease-in-out infinite;
+}
+
+@keyframes worlds {
+  0%,
+  100% {
+    filter: hue-rotate(0deg);
+  }
+  25% {
+    filter: hue-rotate(-42deg) saturate(1.05);
+  }
+  50% {
+    filter: hue-rotate(18deg);
+  }
+  75% {
+    filter: hue-rotate(58deg) saturate(1.1);
+  }
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ── Сайты: request notifications ── */
+.toast {
+  position: absolute;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "dot title"
+    "dot text";
+  column-gap: 0.7em;
+  padding: 0.62em 1em 0.66em 0.8em;
+  border-radius: 0.9em;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.5);
+  font-size: clamp(9.5px, 1.75cqw, 14px);
+  line-height: 1.3;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.toast b {
+  grid-area: title;
+  font-weight: 700;
+}
+
+.toast span {
+  grid-area: text;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.toastDot {
+  grid-area: dot;
+  align-self: center;
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 50%;
+  background: #b9f7c9;
+  box-shadow: 0 0 10px 2px rgba(185, 247, 201, 0.7);
+}
+
+/* ── AI-системы: code written with light ── */
+.code {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  bottom: 58%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5em;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: clamp(9.5px, 2.15cqw, 18px);
+  text-align: left;
+}
+
+/* the same writing mirrored in the still plane */
+.codeReflection {
+  bottom: auto;
+  top: 58%;
+  flex-direction: column-reverse;
+  transform: scaleY(-1);
+  opacity: 0.22;
+  filter: blur(1.2px);
+  -webkit-mask-image: linear-gradient(to top, #000, transparent 90%);
+  mask-image: linear-gradient(to top, #000, transparent 90%);
+}
+
+.codeLine {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.codeText {
+  display: inline-block;
+  color: #f3f7ff;
+  text-shadow:
+    0 0 6px rgba(160, 200, 255, 0.95),
+    0 0 18px rgba(90, 150, 255, 0.75),
+    0 0 36px rgba(70, 120, 255, 0.45);
+}
+
+/* the "pen": a point of light at the tip of the stroke */
+.pen {
+  position: absolute;
+  top: 50%;
+  width: 0.5em;
+  height: 0.5em;
+  margin: -0.25em 0 0 -0.25em;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 8px 3px rgba(200, 225, 255, 0.95),
+    0 0 26px 8px rgba(90, 150, 255, 0.7);
+}
+
+/* ── copy under the card ── */
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sub {
+  margin: clamp(16px, 2.6vh, 26px) 0 0;
+  font-family: var(--font-hub-serif), Georgia, serif;
+  font-size: clamp(17px, 1.6vw, 22px);
+  font-weight: 700;
+  line-height: 1.3;
+  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.18);
+}
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: clamp(14px, 2.2vh, 22px);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  height: 46px;
+  padding: 0 26px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  transition: background 0.3s;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* ── story bars ── */
+.pills {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: clamp(26px, 4vh, 38px);
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.pill {
+  position: relative;
+  width: 80px;
+  height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.34);
+  cursor: pointer;
+}
+
+.pill::before {
+  content: "";
+  position: absolute;
+  inset: -10px 0; /* bigger tap target */
+}
+
+.pillFill,
+.pillDone {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #fff;
+}
+
+.pillFill {
+  transform-origin: left center;
+  animation-name: fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.pillDone {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+@keyframes fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.foot {
+  position: absolute;
+  z-index: 3;
+  left: clamp(18px, 4vw, 48px);
+  right: clamp(18px, 4vw, 48px);
+  bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.foot a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.foot a:hover {
+  color: #fff;
+}
+
+/* ── phones (and any tall screen): 9:16 posters, bars on top like stories ── */
+@media (max-aspect-ratio: 3/4) {
+  .bgLayer {
+    background-image: var(--port);
+  }
+}
+
+@media (max-width: 760px) {
+  .nav {
+    padding: 16px 16px 0;
+  }
+
+  .pills {
+    top: 66px;
+    bottom: auto;
+    left: 16px;
+    right: 16px;
+    transform: none;
+    gap: 5px;
+  }
+
+  .pill {
+    flex: 1;
+    width: auto;
+    height: 3px;
+  }
+
+  .stage {
+    padding: 40px 16px 48px;
+  }
+
+  .title {
+    font-size: clamp(36px, 11vw, 52px);
+  }
+
+  .cardFrame {
+    width: 100%;
+    padding: 6px;
+    border-radius: 20px;
+  }
+
+  .card {
+    border-radius: 15px;
+  }
+
+  .sub {
+    max-width: 22em;
+    font-size: 18px;
+  }
+
+  .btn {
+    min-width: 0;
+    flex: 1;
+    max-width: 170px;
+    height: 46px;
+    padding: 0 18px;
+  }
+
+  .ctas {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bgLayer,
+  .cardVideo,
+  .worlds {
+    transition: none;
+    animation: none;
+  }
+}
