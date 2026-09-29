@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Manrope, Playfair_Display } from "next/font/google";
 import HubLanding from "@/concepts/hub-v1/HubLanding";
 
 // Cyrillic-capable and self-hosted at build time (loads in RU without VPN)
@@ -7,6 +7,13 @@ const manrope = Manrope({
   subsets: ["latin", "cyrillic"],
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-hub",
+  display: "swap",
+});
+// serif half of the minimax-style title: "ainur" in grotesque, the direction in serif
+const playfair = Playfair_Display({
+  subsets: ["latin", "cyrillic"],
+  weight: ["500"],
+  variable: "--font-hub-serif",
   display: "swap",
 });
 
@@ -22,7 +29,7 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div className={manrope.variable}>
+    <div className={`${manrope.variable} ${playfair.variable}`}>
       <HubLanding />
     </div>
   );
