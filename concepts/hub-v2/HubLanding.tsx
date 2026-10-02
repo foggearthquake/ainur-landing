@@ -15,12 +15,11 @@ type Key = "sites" | "ai" | "art";
 /* One world for all three stories — "fog over a still plane" — each in its own colour.
    The background is a slow ambient loop; the card in the middle carries the idea,
    and everything that has to be read (requests, code) is drawn by code, not generated. */
-const SLIDES: { key: Key; name: string; sub: string; href: string }[] = [
+const SLIDES: { key: Key; name: string; sub: string; href: string | null }[] = [
   { key: "sites", name: "Сайты", sub: "Сайт, который ведёт клиента от первого клика до заявки", href: "https://site.gabdra.pw" },
   { key: "ai", name: "AI-системы", sub: "Ассистенты и автоматизация, которые работают на ваших данных", href: "https://ai.gabdra.pw" },
-  // https on this host is held by the VPS's VPN container (serves a google.com cert);
-  // plain http until kukla moves to Vercel like the other two
-  { key: "art", name: "AI-креатив", sub: "Видео, анимация и визуал — от идеи до готового кадра", href: "http://kukla.gabdra.pw" },
+  // kukla.gabdra.pw is not shown yet: the story stays, the button leads nowhere
+  { key: "art", name: "AI-креатив", sub: "Видео, анимация и визуал — от идеи до готового кадра", href: null },
 ];
 
 const asset = (name: string, ext: string) => `/hub/v2/${name}.${ext}`;
@@ -323,9 +322,15 @@ export default function HubLanding() {
           <motion.div key={slide.key} className={s.copy} {...fade}>
             <p className={s.sub}>{slide.sub}</p>
             <div className={s.ctas}>
-              <a href={slide.href} className={s.btn}>
-                Открыть
-              </a>
+              {slide.href ? (
+                <a href={slide.href} className={s.btn}>
+                  Открыть
+                </a>
+              ) : (
+                <span className={`${s.btn} ${s.btnOff}`} aria-disabled="true">
+                  Скоро
+                </span>
+              )}
               <a href={TG} target="_blank" rel="noreferrer" className={s.btn}>
                 Telegram
               </a>
