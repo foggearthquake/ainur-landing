@@ -18,8 +18,8 @@ const ATTACKS = [
 
 const ZERO_WIDTH = /[​-‏⁠﻿]/g;
 
-export function cleanInput(text: string) {
-  return text.normalize("NFC").replace(ZERO_WIDTH, "").replace(/\s+/g, " ").trim().slice(0, 2000);
+export function cleanInput(text: string, max = 2000) {
+  return text.normalize("NFC").replace(ZERO_WIDTH, "").replace(/\s+/g, " ").trim().slice(0, max);
 }
 
 export const isAttack = (text: string) => ATTACKS.some((re) => re.test(text));

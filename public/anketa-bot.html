@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Анкета: бот для вашего бизнеса — ainur.</title>
+<style>
+  * { box-sizing: border-box; }
+  :root { --ink: #1c2733; --muted: #5c6b78; --line: #dde4ea; --soft: #f4f7fa; --accent: #2b78c2; }
+  body {
+    margin: 0; padding: 28px 16px 56px; background: #fbfbfb; color: var(--ink);
+    font: 15px/1.55 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 760px; margin: 0 auto; }
+
+  .brandbar { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+              border-bottom: 2px solid var(--ink); padding-bottom: 8px; margin-bottom: 26px; }
+  .logo { font-size: 24px; font-weight: 800; letter-spacing: -.03em; }
+  .brandbar .meta { font-size: 12px; color: var(--muted); text-align: right; line-height: 1.5; }
+
+  h1 { font-size: 26px; line-height: 1.2; letter-spacing: -.02em; margin: 0 0 10px; }
+  .lead { color: var(--muted); margin: 0 0 18px; }
+  .how { background: var(--soft); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; font-size: 14px; }
+  .how b { color: var(--ink); }
+
+  h2 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: #2b3b4a;
+       margin: 34px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--line);
+       display: grid; grid-template-columns: 2.2em 1fr; }
+  h2 span { color: var(--accent); }
+  .hint { color: var(--muted); font-size: 13.5px; margin: -2px 0 10px; }
+
+  ol.q { list-style: none; margin: 0; padding: 0; counter-reset: q; }
+  ol.q > li { counter-increment: q; display: grid; grid-template-columns: 2.6em 1fr; padding: 9px 0;
+              border-bottom: 1px solid var(--line); break-inside: avoid; }
+  ol.q > li::before { content: counter(q, decimal-leading-zero); font: 12px/1.9 ui-monospace, Consolas, monospace; color: #9aa7b3; }
+  .must { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .03em; color: #8a5a12;
+          background: #fff3dc; border: 1px solid #ecd2a0; border-radius: 9px; padding: 0 7px; margin-left: 6px; vertical-align: 1px; }
+  .ex { display: block; color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+
+  ul.opts { list-style: none; margin: 6px 0 2px; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 18px; }
+  ul.opts li { display: grid; grid-template-columns: 1.4em 1fr; font-size: 14px; }
+  ul.opts li::before { content: ""; width: 11px; height: 11px; border: 1.5px solid #8b98a5; border-radius: 3px; margin-top: .35em; }
+
+  .next { margin-top: 34px; border: 1.5px solid var(--ink); border-radius: 12px; padding: 14px 18px; break-inside: avoid; }
+  .next h3 { margin: 0 0 8px; font-size: 16px; }
+  .next ol { margin: 0; padding-left: 20px; }
+  .next li + li { margin-top: 3px; }
+  a { color: #285778; }
+
+  .signoff { margin-top: 30px; padding-top: 12px; border-top: 2px solid var(--ink); display: flex;
+             justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 12.5px; color: #3a4652; }
+  .signoff b { font-size: 15px; letter-spacing: -.02em; color: var(--ink); }
+
+  @media (max-width: 560px) {
+    body { padding: 20px 14px 40px; }
+    h1 { font-size: 22px; }
+    ul.opts { grid-template-columns: 1fr; }
+    .brandbar { flex-direction: column; gap: 2px; }
+    .brandbar .meta { text-align: left; }
+  }
+  @page { size: A4; margin: 13mm 12mm 15mm; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    h2 { break-after: avoid; page-break-after: avoid; }
+    #s9 { break-before: page; page-break-before: always; margin-top: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="brandbar">
+  <span class="logo">ainur.</span>
+  <span class="meta">gabdra.pw · сайты, AI-системы и автоматизация<br>ainur@gabdra.pw · Telegram @foggearthquake_bot</span>
+</div>
+
+<h1>Анкета: бот для вашего бизнеса</h1>
+<p class="lead">Ответы нужны, чтобы сразу предложить точную схему бота, срок и цену, а не гадать. Займёт 10–15 минут.</p>
+<div class="how">
+  Отвечайте как удобно: текстом, голосовыми, скриншотами, файлами — в Telegram или на почту.
+  Пункты с пометкой <span class="must">для старта</span> нужны в первую очередь, остальное уточним по ходу.
+  Не знаете ответа — так и напишите, подскажу вариант.
+</div>
+
+<h2><span>1</span>О бизнесе</h2>
+<ol class="q">
+  <li><div>Как называется бизнес и чем вы занимаетесь — одной фразой.<span class="must">для старта</span></div></li>
+  <li><div>Сколько у вас точек или филиалов, где они находятся.<span class="must">для старта</span></div></li>
+  <li><div>Сколько сотрудников работает с клиентами: мастера, врачи, менеджеры.<span class="must">для старта</span></div></li>
+  <li><div>Где вас сейчас находят клиенты.<span class="ex">Сайт, Яндекс Карты, 2ГИС, ВКонтакте, Avito, сарафан — пришлите ссылки.</span></div></li>
+</ol>
+
+<h2><span>2</span>Что должен делать бот</h2>
+<ol class="q">
+  <li><div>Главные задачи бота — отметьте всё, что нужно.<span class="must">для старта</span>
+    <ul class="opts">
+      <li>Записывать на услуги</li>
+      <li>Отвечать на частые вопросы</li>
+      <li>Принимать заказы и заявки</li>
+      <li>Отбирать горячие заявки для менеджера</li>
+      <li>Напоминать о визите</li>
+      <li>Собирать отзывы после визита</li>
+      <li>Возвращать постоянных клиентов</li>
+      <li>Другое — опишите</li>
+    </ul></div></li>
+  <li><div>Как всё устроено сейчас, без бота: кто отвечает клиентам, сколько обращений в день, где теряются клиенты.<span class="must">для старта</span>
+    <span class="ex">Например: «администратор отвечает в WhatsApp, вечером и в выходные никто, часть людей не дожидается ответа».</span></div></li>
+  <li><div>Что должно измениться через месяц после запуска.<span class="ex">Больше записей, меньше пропущенных сообщений, меньше рутины у администратора — что для вас главное.</span></div></li>
+</ol>
+
+<h2><span>3</span>Где будет работать бот</h2>
+<ol class="q">
+  <li><div>В каких каналах вам пишут и где нужен бот.<span class="must">для старта</span>
+    <ul class="opts">
+      <li>Telegram</li>
+      <li>WhatsApp</li>
+      <li>ВКонтакте</li>
+      <li>MAX</li>
+      <li>Чат на сайте</li>
+      <li>Другое</li>
+    </ul></div></li>
+  <li><div>Когда пишут чаще всего и сколько сообщений в день примерно.</div></li>
+  <li><div>Присылают ли клиенты голосовые. Бот умеет их понимать.</div></li>
+</ol>
+
+<h2><span>4</span>Запись — если она нужна</h2>
+<p class="hint">Если бот не записывает клиентов, этот раздел можно пропустить.</p>
+<ol class="q">
+  <li><div>Список услуг с ценами и длительностью.<span class="must">для старта</span><span class="ex">Подойдёт прайс файлом или фото.</span></div></li>
+  <li><div>Кто какие услуги выполняет.<span class="must">для старта</span></div></li>
+  <li><div>График работы: дни, часы, перерывы. Как часто он меняется и кто его ведёт.<span class="must">для старта</span></div></li>
+  <li><div>Где вы ведёте запись сейчас.<span class="ex">YClients, Altegio, 1С, Google-таблица, бумажный журнал. Если сервис — есть ли к нему доступ для подключения.</span></div></li>
+  <li><div>Правила записи: минимум за сколько можно записаться, перенести и отменить, нужна ли предоплата, сколько записей можно иметь одновременно.</div></li>
+  <li><div>Напоминания: за сколько до визита и что делать, если клиент не подтверждает.</div></li>
+  <li><div>Нужны ли отзывы после визита и куда их вести.<span class="ex">Например, довольных — на Яндекс Карты, недовольных — сразу вам.</span></div></li>
+</ol>
+
+<h2><span>5</span>Что бот должен знать</h2>
+<ol class="q">
+  <li><div>10–20 вопросов, которые клиенты задают чаще всего, и ваши ответы.<span class="must">для старта</span><span class="ex">Проще всего — скриншоты переписок с клиентами.</span></div></li>
+  <li><div>Документы, из которых бот берёт ответы: прайс, условия, гарантии, правила, доставка, оплата.<span class="must">для старта</span></div></li>
+  <li><div>О чём бот говорить не должен.<span class="ex">Например: диагнозы, скидки без согласования, сравнение с конкурентами.</span></div></li>
+  <li><div>Как общаться: на «вы» или на «ты», строго или дружелюбно. Пример сообщения, которое вам нравится.</div></li>
+</ol>
+
+<h2><span>6</span>Когда нужен человек</h2>
+<ol class="q">
+  <li><div>Кто подхватывает диалог, когда бот зовёт человека, и в какие часы.<span class="must">для старта</span><span class="ex">Имя и Telegram. Можно несколько человек.</span></div></li>
+  <li><div>Какие случаи сразу передавать человеку.<span class="ex">Жалобы, возвраты, сложные вопросы, конкретные слова.</span></div></li>
+  <li><div>Что отвечать ночью и в выходные.</div></li>
+</ol>
+
+<h2><span>7</span>Данные и подключения</h2>
+<ol class="q">
+  <li><div>Какую CRM или учётную систему вы используете и нужно ли передавать туда заявки и записи.</div></li>
+  <li><div>Нужна ли оплата прямо в боте.<span class="ex">ЮKassa, Т-Банк, СБП.</span></div></li>
+  <li><div>Нужны ли рассылки: акции, напоминания о повторном визите. Только для клиентов, которые на это согласились.</div></li>
+  <li><div>Есть ли политика обработки персональных данных на сайте и кто за это отвечает.<span class="must">для старта</span><span class="ex">Бот спрашивает согласие клиента и ссылается на неё. Если политики нет — поможем подготовить.</span></div></li>
+</ol>
+
+<h2><span>8</span>Управление и отчёты</h2>
+<ol class="q">
+  <li><div>Нужна ли админка: видеть диалоги, записи, статистику, отвечать клиентам. Кто будет ею пользоваться.</div></li>
+  <li><div>Какие цифры для вас важны.<span class="ex">Число записей и заявок, сколько вопросов закрыл бот, оценки клиентов, неявки.</span></div></li>
+</ol>
+
+<h2 id="s9"><span>9</span>Сроки и бюджет</h2>
+<ol class="q">
+  <li><div>Когда хотите запустить бота.<span class="must">для старта</span></div></li>
+  <li><div>Ориентир бюджета — поможет предложить вариант, который в него впишется.</div></li>
+</ol>
+
+<div class="next">
+  <h3>Что будет дальше</h3>
+  <ol>
+    <li>Разбираю ответы и предлагаю схему бота: что он делает, где работает, к чему подключается.</li>
+    <li>Называю фиксированную цену и срок. Простой бот — 3–7 дней, система с записью и интеграциями — 1–3 недели.</li>
+    <li>Собираю, показываю на тестовом запуске, вношу правки.</li>
+    <li>Запускаю у вас и остаюсь на связи.</li>
+  </ol>
+  <p style="margin:10px 0 0">Как это выглядит вживую — демо бота записи в клинику:
+    <a href="https://t.me/foggearthquake_bot?start=demo">t.me/foggearthquake_bot?start=demo</a></p>
+</div>
+
+<div class="signoff">
+  <span><b>ainur.</b> · gabdra.pw</span>
+  <span>ainur@gabdra.pw · t.me/foggearthquake_bot</span>
+</div>
+
+</div>
+</body>
+</html>

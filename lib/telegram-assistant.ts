@@ -178,9 +178,19 @@ async function salesAnswer(ctx: Ctx, text: string) {
   await send(ctx.chatId, esc(reply), AFTER_SALES);
 }
 
-async function leadStart(ctx: Ctx, type?: string) {
+async function leadStart(ctx: Ctx, type?: string, bot = false) {
   if (type) {
-    await setFlow(ctx, { kind: "lead", step: "task", type }, ctx.state.mode === "demo" ? "demo" : "sales");
+    const mode = ctx.state.mode === "demo" ? "demo" : "sales";
+    if (bot) {
+      // a bot request: tell it in one message (text or voice) or fill in the short brief
+      await setFlow(ctx, { kind: "lead", step: "how", type, bot }, mode);
+      await edit(ctx.chatId, ctx.msgId, "Отлично, обсудим бота. Как удобнее рассказать о задаче?", [
+        [b("Расскажу голосовым или текстом", "l:how:tell")],
+        [b("Заполню анкету — 2–3 минуты", "l:how:form")],
+      ]);
+      return;
+    }
+    await setFlow(ctx, { kind: "lead", step: "task", type }, mode);
     await edit(ctx.chatId, ctx.msgId, leadTaskText(type));
     return;
   }
@@ -196,11 +206,136 @@ async function leadStart(ctx: Ctx, type?: string) {
   );
 }
 
-const leadTaskText = (type: string) =>
-  `<b>${esc(type)}</b> — понял. Опиши задачу в паре фраз: что за бизнес и что должно измениться. Можно голосовым.`;
+const leadTaskText = (type: string, bot = false) =>
+  bot
+    ? `Расскажи одним сообщением — проще всего голосовым, до 5 минут:\n• что за бизнес и сколько людей работает с клиентами;\n• что должен делать бот: записывать, отвечать на вопросы, принимать заказы;\n• где тебе пишут клиенты и кто отвечает сейчас;\n• к какому сроку нужно.`
+    : `<b>${esc(type)}</b> — понял. Опиши задачу в паре фраз: что за бизнес и что должно измениться. Можно голосовым.`;
+
+/* ── short brief for a bot: only the "для старта" questions of the full questionnaire ── */
+
+const ANKETA_URL = "https://gabdra.pw/anketa-bot.html";
+
+type BriefQ = { key: string; label: string; kind: "multi" | "text" | "choice"; text: string; options?: [string, string][]; when?: (a: Record<string, string>) => boolean };
+
+const BRIEF: BriefQ[] = [
+  {
+    key: "tasks",
+    label: "Задачи",
+    kind: "multi",
+    text: "Что должен делать бот? Отметь всё нужное и нажми «Готово».",
+    options: [
+      ["book", "Записывать на услуги"],
+      ["faq", "Отвечать на вопросы"],
+      ["orders", "Принимать заказы и заявки"],
+      ["hot", "Отбирать горячие заявки"],
+      ["remind", "Напоминать о визите"],
+      ["reviews", "Собирать отзывы"],
+      ["return", "Возвращать клиентов"],
+      ["other", "Другое"],
+    ],
+  },
+  {
+    key: "channels",
+    label: "Каналы",
+    kind: "multi",
+    text: "Где тебе пишут клиенты и где нужен бот?",
+    options: [
+      ["tg", "Telegram"],
+      ["wa", "WhatsApp"],
+      ["vk", "ВКонтакте"],
+      ["max", "MAX"],
+      ["site", "Чат на сайте"],
+      ["other", "Другое"],
+    ],
+  },
+  { key: "business", label: "Бизнес", kind: "text", text: "Как называется бизнес и чем занимаетесь? Сколько точек и сколько сотрудников работает с клиентами?" },
+  { key: "now", label: "Как сейчас", kind: "text", text: "Как всё устроено сейчас: кто отвечает клиентам, сколько обращений в день, где теряются клиенты?" },
+  {
+    key: "booking",
+    label: "Запись",
+    kind: "text",
+    text: "Про запись: какие услуги, кто их выполняет, какой график? Где ведёте запись сейчас — YClients, таблица, журнал? Прайс можно прислать фото или файлом.",
+    when: (a) => (a.tasks ?? "").includes("Записывать"),
+  },
+  { key: "faq", label: "Частые вопросы", kind: "text", text: "Какие вопросы клиенты задают чаще всего? Можно прислать скриншоты переписок." },
+  { key: "human", label: "Кто подхватывает", kind: "text", text: "Кто будет подхватывать диалог, когда бот позовёт человека, и в какие часы?" },
+  {
+    key: "privacy",
+    label: "Политика ПДн",
+    kind: "choice",
+    text: "Есть ли на сайте политика обработки персональных данных? Бот спрашивает согласие клиента и ссылается на неё.",
+    options: [
+      ["yes", "Есть"],
+      ["no", "Нет"],
+      ["dk", "Не знаю"],
+    ],
+  },
+  {
+    key: "when",
+    label: "Запуск",
+    kind: "choice",
+    text: "Когда хочешь запустить бота?",
+    options: [
+      ["asap", "Как можно скорее"],
+      ["month", "В течение месяца"],
+      ["later", "Не горит"],
+    ],
+  },
+];
+
+type LeadFlow = Extract<Flow, { kind: "lead" }>;
+
+// until the tasks are answered, conditional questions count too: the total may shrink, never grow
+const briefActive = (a: Record<string, string>) =>
+  BRIEF.map((q, i) => ({ q, i })).filter(({ q }) => !q.when || !("tasks" in a) || q.when(a));
+const nextQ = (from: number, a: Record<string, string>) => BRIEF.findIndex((q, i) => i >= from && (!q.when || q.when(a)));
+
+async function briefRender(ctx: Ctx, f: LeadFlow) {
+  const q = BRIEF[f.q ?? 0];
+  const active = briefActive(f.brief ?? {});
+  const pos = active.findIndex((x) => x.i === (f.q ?? 0)) + 1;
+  const head = `<b>Анкета · ${pos} из ${active.length}</b>\n`;
+  const skip = b("Пропустить", "l:bq:skip");
+  if (q.kind === "multi") {
+    const picks = new Set(f.picks ?? []);
+    const opts = q.options!.map(([k, label]) => b(`${picks.has(k) ? "✓ " : ""}${label}`, `l:bq:t:${k}`));
+    const rows: Keyboard = [];
+    for (let i = 0; i < opts.length; i += 2) rows.push(opts.slice(i, i + 2));
+    rows.push([b("Готово", "l:bq:done"), skip]);
+    return edit(ctx.chatId, ctx.msgId, head + q.text, rows);
+  }
+  if (q.kind === "choice") {
+    return edit(ctx.chatId, ctx.msgId, head + q.text, [q.options!.map(([k, label]) => b(label, `l:bq:c:${k}`)), [skip]]);
+  }
+  return edit(ctx.chatId, ctx.msgId, `${head}${q.text}\n<i>Можно голосовым.</i>`, [[skip]]);
+}
+
+/* store the answer to the current question and move on; after the last one the brief goes to the owner */
+async function briefAnswer(ctx: Ctx, f: LeadFlow, answer?: string) {
+  const brief = { ...(f.brief ?? {}) };
+  const q = BRIEF[f.q ?? 0];
+  brief[q.key] = answer ?? ""; // skipped = empty, so the counter knows the question is behind
+  const next = nextQ((f.q ?? 0) + 1, brief);
+  if (next === -1) return briefFinish(ctx, { ...f, brief });
+  const nf: LeadFlow = { ...f, q: next, brief, picks: [] };
+  await setFlow(ctx, nf);
+  return briefRender(ctx, nf);
+}
+
+async function briefFinish(ctx: Ctx, f: LeadFlow) {
+  const a = f.brief ?? {};
+  const lines = briefActive(a).map(({ q }) => `${q.label}: ${a[q.key] || "—"}`);
+  const summary = `Анкета: бот (${f.type ?? "бот"})\n\n${lines.join("\n")}`;
+  return leadSubmit(ctx, summary, f.type ?? "Бот или ассистент", `Анкета у Айнура — спасибо! Если захочешь рассказать подробнее, вот полная анкета: ${ANKETA_URL}`);
+}
+
+/* Telegram caps a message at 4096 characters: a long brief goes in parts */
+async function sendLong(chatId: string, text: string) {
+  for (let i = 0; i < text.length; i += 3800) await send(chatId, esc(text.slice(i, i + 3800)));
+}
 
 /* the request reaches the owner right after the task — the contact question is optional */
-async function leadSubmit(ctx: Ctx, task: string, type: string) {
+async function leadSubmit(ctx: Ctx, task: string, type: string, thanks = "Заявка у Айнура.") {
   const contact = `Telegram${ctx.user?.username ? ` @${ctx.user.username}` : ""} · id:${ctx.chatId}`;
   const saved = await createLead(
     {
@@ -215,12 +350,13 @@ async function leadSubmit(ctx: Ctx, task: string, type: string) {
     `telegram:${ctx.chatId}`,
     "telegram-bot:v2",
   );
+  const long = task.length > 3000;
   await notifyLead({
     id: saved.id,
     name: saved.name,
     company: saved.company,
     telegram_or_email: saved.telegramOrEmail,
-    project_summary: saved.projectSummary,
+    project_summary: long ? `${task.slice(0, 3000)}…\n(полностью — следующим сообщением)` : task,
     budget_range: saved.budgetRange,
     consent: true,
     website: "",
@@ -228,8 +364,9 @@ async function leadSubmit(ctx: Ctx, task: string, type: string) {
     ip_hash: saved.ipHash,
     created_at: saved.createdAt,
   });
+  if (long && ADMIN()) await sendLong(ADMIN(), `Полный текст заявки · id:${ctx.chatId}\n\n${task}`);
   await setFlow(ctx, { kind: "lead", step: "contact", type });
-  await send(ctx.chatId, "Заявка у Айнура. Ответить тебе здесь, в Telegram?", [
+  await send(ctx.chatId, `${thanks}\n\nОтветить тебе здесь, в Telegram?`, [
     [b("Да, пишите сюда", "l:c:tg"), b("Дам другой контакт", "l:c:other")],
   ]);
 }
@@ -482,8 +619,40 @@ async function onCallback(ctx: Ctx, data: string, callbackId: string) {
   }
   if (data === "lead") return leadStart(ctx);
   if (ns === "l") {
-    if (a === "t" && LEAD_TYPES[c]) return leadStart(ctx, LEAD_TYPES[c]);
-    if (data === "l:demo") return leadStart(ctx, "Бот записи — после демо клиники");
+    if (a === "t" && LEAD_TYPES[c]) return leadStart(ctx, LEAD_TYPES[c], c === "bot");
+    if (data === "l:demo") return leadStart(ctx, "Бот записи — после демо клиники", true);
+    const lf = ctx.state.flow.kind === "lead" ? (ctx.state.flow as LeadFlow) : null;
+    if (a === "how" && lf) {
+      if (c === "form") {
+        const nf: LeadFlow = { ...lf, step: "brief", q: 0, brief: {}, picks: [] };
+        await setFlow(ctx, nf);
+        return void (await briefRender(ctx, nf));
+      }
+      await setFlow(ctx, { ...lf, step: "task" });
+      return void (await edit(ctx.chatId, ctx.msgId, leadTaskText(lf.type ?? "", true)));
+    }
+    if (a === "bq") {
+      if (!lf || lf.step !== "brief") return leadStart(ctx);
+      const q = BRIEF[lf.q ?? 0];
+      if (c === "skip") return void (await briefAnswer(ctx, lf));
+      if (c === "t" && q.kind === "multi" && q.options!.some(([k]) => k === d)) {
+        const picks = new Set(lf.picks ?? []);
+        if (picks.has(d)) picks.delete(d);
+        else picks.add(d);
+        const nf: LeadFlow = { ...lf, picks: [...picks] };
+        await setFlow(ctx, nf);
+        return void (await briefRender(ctx, nf));
+      }
+      if (c === "done" && q.kind === "multi") {
+        const chosen = q.options!.filter(([k]) => (lf.picks ?? []).includes(k)).map(([, label]) => label);
+        return void (await briefAnswer(ctx, lf, chosen.join(", ") || undefined));
+      }
+      if (c === "c" && q.kind === "choice") {
+        const opt = q.options!.find(([k]) => k === d);
+        if (opt) return void (await briefAnswer(ctx, lf, opt[1]));
+      }
+      return;
+    }
     if (data === "l:c:tg") {
       await setFlow(ctx, { kind: "none" });
       return void (await edit(ctx.chatId, ctx.msgId, "Договорились — Айнур напишет сюда. Пока можешь посмотреть демо.", [
@@ -574,7 +743,8 @@ async function onText(ctx: Ctx, text: string) {
   if (f.kind !== "none" && STOP.test(text)) return ctx.state.mode === "demo" ? showDemo(ctx) : showMenu(ctx);
   if (HUMAN.test(text)) return handover(ctx, text);
 
-  if (f.kind === "lead" && f.step === "task") {
+  if (f.kind === "lead" && f.step === "brief") return briefAnswer(ctx, f, text); // typed or spoken answer to the current question
+  if (f.kind === "lead" && (f.step === "task" || f.step === "how")) {
     if (text.length < 8) return void (await send(ctx.chatId, "Чуть подробнее, пожалуйста: что за бизнес и что должно измениться?"));
     return leadSubmit(ctx, text, f.type ?? "Не указано");
   }
@@ -636,23 +806,34 @@ async function onMessage(msg: TgMessage) {
   if (OLD_BUTTONS[text] === "lead") return leadStart(ctx);
   if (OLD_BUTTONS[text] === "svc") return void (await send(chatId, SERVICES_TEXT, AFTER_SALES));
 
+  // in a request the client tells about the business: longer voice notes, no length cap, files go to the owner
+  const inLead = ctx.state.flow.kind === "lead" && ctx.state.flow.step !== "contact";
   const voice = msg.voice ?? msg.audio;
   if (voice) {
-    if (voice.duration > 120 || (voice.file_size ?? 0) > 4_000_000)
-      return void (await send(chatId, "Голосовое — до 2 минут, пожалуйста. Или напишите текстом."));
+    const maxSec = inLead ? 300 : 120;
+    if (voice.duration > maxSec || (voice.file_size ?? 0) > 8_000_000)
+      return void (await send(chatId, `Голосовое — до ${maxSec / 60} минут, пожалуйста. Или напишите текстом.`));
     await typing(chatId);
     const audio = await downloadFile(voice.file_id);
     const heard = audio ? await transcribe(audio) : null;
     if (!heard) return void (await send(chatId, "Не разобрал голосовое — напишите, пожалуйста, текстом."));
-    text = cleanInput(heard);
-    await send(chatId, `<i>Распознал: «${esc(text)}»</i>`);
+    text = cleanInput(heard, inLead ? 8000 : 2000);
+    await send(chatId, `<i>Распознал: «${esc(text.length > 900 ? `${text.slice(0, 900)}…` : text)}»</i>`);
+  } else if (inLead && msg.text) {
+    text = cleanInput(msg.text, 8000);
   }
 
   if (!text) {
+    if (inLead && (msg.photo || msg.document)) {
+      await send(ADMIN(), `Файл к заявке · ${who(msg.from)} · id:${chatId}`);
+      await tg("copyMessage", { chat_id: ADMIN(), from_chat_id: msg.chat.id, message_id: msg.message_id });
+      return void (await send(chatId, "Получил файл — передам Айнуру. Можно прислать ещё или продолжить."));
+    }
     if (msg.photo || msg.document || msg.sticker || msg.video || msg.video_note)
       await send(chatId, "Пока понимаю текст и голосовые сообщения.");
     return;
   }
+  if (inLead) return onText(ctx, text); // the answers never reach the model, nothing to guard against here
   if (text.length > 1500) return void (await send(chatId, "Слишком длинно — сократите, пожалуйста, до пары абзацев."));
   if (isAttack(text)) {
     return void (await send(

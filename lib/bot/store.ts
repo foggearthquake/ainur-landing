@@ -5,7 +5,16 @@ export type Mode = "menu" | "sales" | "demo";
 
 export type Flow =
   | { kind: "none" }
-  | { kind: "lead"; step: "task" | "contact"; type?: string }
+  | {
+      kind: "lead";
+      // how: «tell it in one message» or «fill in the brief»; brief: question q of the short questionnaire
+      step: "how" | "task" | "brief" | "contact";
+      type?: string;
+      bot?: boolean;
+      q?: number;
+      brief?: Record<string, string>;
+      picks?: string[];
+    }
   | {
       kind: "book";
       step: "service" | "doctor" | "day" | "time" | "name" | "confirm";
