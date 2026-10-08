@@ -39,3 +39,5 @@ const client = createClient({
 });
 
 export const db = drizzle(client, { schema });
+// raw client for atomic batches (the bot's demo bookings)
+export const libsql = client;

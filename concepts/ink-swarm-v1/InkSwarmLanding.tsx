@@ -79,6 +79,16 @@ const cases: Case[] = [
   },
 ];
 
+// the live demo in @foggearthquake_bot, told in plain words (how it behaves, not how it is wired)
+const demoPoints = [
+  "Понимает обычный текст и голосовые — сам разбирает, чего хочет человек: записаться, перенести, спросить.",
+  "Записывает кнопками по живому расписанию. Время проверяется в момент записи, двойная запись исключена.",
+  "Отвечает по базе знаний бизнеса: цены и условия — из прайса, а не из головы нейросети.",
+  "Не даёт себя «сломать» и не раскрывает внутренние настройки.",
+  "Жалоба, сложный вопрос или «позовите человека» — диалог сразу уходит администратору.",
+  "Под твой бизнес: WhatsApp и VK, напоминания о визите, отзывы, CRM, админка с аналитикой.",
+];
+
 type Panel = "about" | "solutions" | null;
 
 const solutions = [
@@ -260,6 +270,28 @@ export default function InkSwarmLanding() {
                   </div>
                 </details>
               ))}
+            </div>
+          </section>
+
+          <section className={styles.section} id="demo">
+            <div className={styles.label}>Демо</div>
+            <h2 className={styles.contactLead}>Попробуй бота записи для клиники.</h2>
+            <p className={styles.contactText}>
+              Запись, перенос, вопросы — кнопками, текстом или голосом. Клиника вымышленная, бот настоящий: так же
+              он может работать у тебя.
+            </p>
+            <ol className={styles.demoList}>
+              {demoPoints.map((p, i) => (
+                <li key={p}>
+                  <span className={styles.demoNum}>{String(i + 1).padStart(2, "0")}</span>
+                  <span>{p}</span>
+                </li>
+              ))}
+            </ol>
+            <div className={styles.contactLinks}>
+              <a href="https://t.me/foggearthquake_bot?start=demo" target="_blank" rel="noreferrer">
+                Открыть демо в Telegram →
+              </a>
             </div>
           </section>
 

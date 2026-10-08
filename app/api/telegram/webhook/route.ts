@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { handleTelegramUpdate } from "@/lib/telegram-assistant";
 
 export const runtime = "nodejs";
+// a voice note = download + transcription + model call; the default 10 s is too tight
+export const maxDuration = 30;
 
 export async function GET() {
   return NextResponse.json({ ok: true });
