@@ -18,8 +18,7 @@ type Key = "sites" | "ai" | "art";
 const SLIDES: { key: Key; name: string; sub: string; href: string | null }[] = [
   { key: "sites", name: "Сайты", sub: "Сайт, который ведёт клиента от первого клика до заявки", href: "https://site.gabdra.pw" },
   { key: "ai", name: "AI-системы", sub: "Ассистенты и автоматизация, которые работают на ваших данных", href: "https://ai.gabdra.pw" },
-  // kukla.gabdra.pw is not shown yet: the story stays, the button leads nowhere
-  { key: "art", name: "AI-креатив", sub: "Видео, анимация и визуал — от идеи до готового кадра", href: null },
+  { key: "art", name: "AI-креатив", sub: "Видео, анимация и визуал — от идеи до готового кадра", href: "https://workshopfilms.ru" },
 ];
 
 const asset = (name: string, ext: string) => `/hub/v2/${name}.${ext}`;
