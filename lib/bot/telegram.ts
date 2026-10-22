@@ -22,7 +22,9 @@ export type TgMessage = {
 export type TgCallback = { id: string; from: TgUser; data?: string; message?: TgMessage };
 export type TgUpdate = { update_id: number; message?: TgMessage; callback_query?: TgCallback };
 
-const api = () => `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
+// RU-копия: TELEGRAM_API_BASE — туннель через barboss (api.telegram.org из РФ недоступен)
+const TG = () => process.env.TELEGRAM_API_BASE ?? "https://api.telegram.org";
+const api = () => `${TG()}/bot${process.env.TELEGRAM_BOT_TOKEN}`;
 
 export const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -80,7 +82,7 @@ export async function downloadFile(fileId: string): Promise<Blob | null> {
   const path = (r.result as { file_path?: string } | undefined)?.file_path;
   if (!r.ok || !path) return null;
   try {
-    const f = await fetch(`https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${path}`);
+    const f = await fetch(`${TG()}/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${path}`);
     return f.ok ? await f.blob() : null;
   } catch {
     return null;

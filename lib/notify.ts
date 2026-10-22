@@ -52,7 +52,7 @@ async function sendTelegramNotification(message: string) {
     return false;
   }
 
-  const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+  const response = await fetch(`${process.env.TELEGRAM_API_BASE ?? "https://api.telegram.org"}/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
