@@ -16,7 +16,11 @@ export function middleware(request: NextRequest) {
 
   // Only rewrite the root so /api, /privacy, assets, etc. still resolve.
   if (route && request.nextUrl.pathname === "/") {
-    return NextResponse.rewrite(new URL(route, request.url));
+    // nextUrl, а не new URL(route, request.url): за nginx (RU-копия) request.url = https://localhost:3001,
+    // Next принимает это за внешний адрес и проксирует сам себя по HTTPS (EPROTO, 500)
+    const url = request.nextUrl.clone();
+    url.pathname = route;
+    return NextResponse.rewrite(url);
   }
 
   return NextResponse.next();
