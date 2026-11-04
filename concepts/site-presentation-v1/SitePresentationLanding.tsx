@@ -321,12 +321,12 @@ function Wrap({ children, className }: { children: ReactNode; className?: string
 }
 
 /* ── витрина проектов: ноутбук и телефон в 3D, на экранах — вид сайтов (без ссылок) ── */
-const SHOWCASE: (ShowcaseCase & { name: string; kind: string })[] = [
-  { key: "gtm", name: "GTM", kind: "Мем-лендинг: 3D-мир на three.js" },
-  { key: "trick", name: "Trick or Exploit", kind: "Сайт-история на three.js, 9 глав" },
-  { key: "vildan", name: "Вильдан Миннибаев", kind: "Лендинг ведущего мероприятий" },
-  { key: "decoy", name: "DECOY", kind: "Веб-приложение: 3D-сцена и живые данные" },
-  { key: "doomsday", name: "$TICK · 85 SECONDS", kind: "Сайт-мир в пиксель-арте", phoneLandscape: true },
+const SHOWCASE: (ShowcaseCase & { name: string })[] = [
+  { key: "gtm", name: "GTM" },
+  { key: "trick", name: "Trick or Exploit" },
+  { key: "vildan", name: "Вильдан Миннибаев" },
+  { key: "decoy", name: "DECOY" },
+  { key: "doomsday", name: "$TICK · 85 SECONDS", phoneLandscape: true },
 ];
 const SHOWCASE_NEXT_S = 9; // автопереход к следующему проекту
 
@@ -381,17 +381,14 @@ function WorksShowcase() {
               type="button"
               onClick={() => pick(i)}
               aria-pressed={i === active}
-              className={`group flex w-full items-baseline gap-3 rounded-2xl px-4 py-3 text-left transition-colors duration-300 ${
+              className={`group flex w-full items-baseline gap-3 rounded-2xl px-4 py-3.5 text-left transition-colors duration-300 ${
                 i === active ? "bg-white/[0.06] ring-1 ring-accent/30" : "hover:bg-white/[0.03]"
               }`}
             >
               <span className={`font-mono text-[11px] tabular-nums ${i === active ? "text-accent" : "text-muted-foreground"}`}>
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <span className="min-w-0">
-                <span className="block text-[1rem] font-semibold">{c.name}</span>
-                <span className="mt-0.5 block text-[0.85rem] leading-snug text-muted-foreground">{c.kind}</span>
-              </span>
+              <span className="min-w-0 text-[1rem] font-semibold">{c.name}</span>
             </button>
           </li>
         ))}
