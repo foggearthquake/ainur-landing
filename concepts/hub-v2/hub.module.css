@@ -27,12 +27,18 @@
   transition: opacity 0.9s ease;
 }
 
-.bgVideo {
+/* туман кодом поверх постеров: проявляется, когда нарисован первый кадр */
+.bgFog {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.bgFog[data-on] {
+  opacity: 1;
 }
 
 /* the lower part of the fog is the palest: a breath of shade keeps the buttons readable */

@@ -4,11 +4,11 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from "re
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { TelegramLogo } from "@phosphor-icons/react";
+import FogBackdrop from "./FogBackdrop";
 import s from "./hub.module.css";
 
 const TG = "https://t.me/foggearthquake_bot";
 const SLIDE_MS = 8000;
-const PORTRAIT = "(max-aspect-ratio: 3/4)";
 
 type Key = "sites" | "ai" | "art";
 
@@ -23,19 +23,9 @@ const SLIDES: { key: Key; name: string; sub: string; href: string | null }[] = [
 
 const asset = (name: string, ext: string) => `/hub/v2/${name}.${ext}`;
 
-/* ── background: a looping clip per story, landscape or 9:16 by screen shape ── */
-function Backdrop({ index, portrait }: { index: number; portrait: boolean | null }) {
-  const refs = useRef<(HTMLVideoElement | null)[]>([]);
-  const [warm, setWarm] = useState(false); // fetch the other clips once the first one runs
-
-  useEffect(() => {
-    refs.current.forEach((v, i) => {
-      if (!v) return;
-      if (i === index) v.play().catch(() => {});
-      else v.pause();
-    });
-  }, [index, portrait]);
-
+/* ── background: fog over a still plane drawn by code (FogBackdrop) on top of CSS posters;
+   the posters paint the first screen and stay if WebGL is missing ── */
+function Backdrop({ index }: { index: number }) {
   return (
     <div className={s.bg} aria-hidden>
       {SLIDES.map((sl, i) => (
@@ -50,24 +40,9 @@ function Backdrop({ index, portrait }: { index: number; portrait: boolean | null
             } as CSSProperties
           }
         >
-          {/* posters paint the first screen from CSS; the clip is chosen once the screen shape is known */}
-          {portrait !== null && (
-            <video
-              ref={(el) => {
-                refs.current[i] = el;
-              }}
-              className={s.bgVideo}
-              src={asset(`bg-${sl.key}-${portrait ? "port" : "land"}`, "mp4")}
-              muted
-              loop
-              playsInline
-              autoPlay={i === index}
-              preload={i === index || warm ? "auto" : "none"}
-              onPlaying={() => setWarm(true)}
-            />
-          )}
         </div>
       ))}
+      <FogBackdrop index={index} className={s.bgFog} />
       <div className={s.bgShade} />
     </div>
   );
@@ -235,16 +210,7 @@ export default function HubLanding() {
   const [index, setIndex] = useState(0);
   const [cycle, setCycle] = useState(0); // restarts the progress bar
   const [paused, setPaused] = useState(false);
-  const [portrait, setPortrait] = useState<boolean | null>(null);
   const drag = useRef<{ x: number; y: number } | null>(null);
-
-  useEffect(() => {
-    const mq = window.matchMedia(PORTRAIT);
-    const update = () => setPortrait(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
 
   const go = useCallback((i: number) => {
     setIndex((i + SLIDES.length) % SLIDES.length);
@@ -296,7 +262,7 @@ export default function HubLanding() {
         setPaused(false);
       }}
     >
-      <Backdrop index={index} portrait={portrait} />
+      <Backdrop index={index} />
 
       <header className={s.nav}>
         <Link href="/" className={s.logo}>
