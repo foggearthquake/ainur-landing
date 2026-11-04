@@ -11,6 +11,7 @@ import {
   IconPlatform,
   IconSpark,
 } from "./Graphics";
+import Pipeline from "./Pipeline";
 import LeadForm from "@/app/LeadForm";
 import Clock from "../minimal-v1/Clock";
 import styles from "./ink-swarm.module.css";
@@ -239,6 +240,19 @@ export default function InkSwarmLanding() {
 
       <main className={styles.content}>
         <div className={styles.wrap}>
+          <section className={styles.section} id="flow">
+            <div className={styles.label}>Как это работает</div>
+            <h2 className={styles.contactLead}>Заявка проходит путь сама.</h2>
+            <p className={styles.contactText}>
+              Клиент пишет, ИИ отвечает и оформляет заявку, CRM её хранит, вам приходит готовое. Нажми на узел —
+              покажу, что он делает.
+            </p>
+            <Pipeline />
+            <div className={styles.contactLinks}>
+              <a href="#demo">Проверить на демо-боте ↓</a>
+            </div>
+          </section>
+
           <section className={styles.section} id="works">
             <div className={styles.label}>Работы</div>
             <p className={styles.worksLine}>

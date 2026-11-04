@@ -671,3 +671,316 @@
 }
 
 /* (workflow / before-after block removed) */
+
+/* ── Pipeline: живая схема Клиент → ИИ → CRM → Вы (цикл 6 с, см. Pipeline.tsx) ── */
+.pipe {
+  margin: 8px 0 26px;
+}
+
+.pipeRow {
+  display: flex;
+  align-items: flex-start;
+}
+
+.pipeCell {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.pipeCell:first-child {
+  flex: 0 0 auto;
+}
+
+.pipeTrack {
+  position: relative;
+  flex: 1;
+  height: 1px;
+  margin-top: 26px;
+  background: var(--border);
+}
+
+.pipePacket {
+  position: absolute;
+  inset: -3px 0 auto 0;
+  height: 7px;
+  opacity: 0;
+  pointer-events: none;
+  /* хвост кометы: прозрачное тело, у правого края — цвет пакета */
+  background: linear-gradient(90deg, transparent calc(100% - 46px), rgba(31, 168, 201, 0.45)) center / 100% 1px no-repeat;
+  animation: kSeg 6s linear infinite both;
+}
+
+.pipePacket::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1fa8c9;
+  box-shadow: 0 0 10px rgba(31, 168, 201, 0.7);
+}
+
+.pipeLead {
+  background-image: linear-gradient(90deg, transparent calc(100% - 46px), rgba(25, 169, 113, 0.45));
+}
+
+.pipeLead::after {
+  background: #19a971;
+  box-shadow: 0 0 10px rgba(25, 169, 113, 0.7);
+}
+
+.pipeSeg2 {
+  animation-delay: 1.5s;
+}
+
+.pipeSeg3 {
+  animation-delay: 2.7s;
+}
+
+@keyframes kSeg {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+  }
+  15% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  17%,
+  100% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+}
+
+.pipeNode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 116px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+
+.pipeDot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.16s ease;
+}
+
+.pipeNode:hover .pipeDot {
+  border-color: var(--text);
+}
+
+.pipeNode:active .pipeDot {
+  transform: scale(0.96);
+}
+
+.pipeNode:focus-visible {
+  outline: none;
+}
+
+.pipeNode:focus-visible .pipeDot {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+
+.pipeNodeOn .pipeDot {
+  background: var(--text);
+  border-color: var(--text);
+  color: #fff;
+}
+
+/* вспышка узла, когда до него доходит пакет */
+.pipeDot::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 1px solid #19a971;
+  opacity: 0;
+  animation: kHit 6s ease-out infinite;
+}
+
+.pipeHit0::after {
+  border-color: #1fa8c9;
+}
+
+.pipeHit1::after {
+  animation-delay: 0.9s;
+}
+
+.pipeHit2::after {
+  animation-delay: 2.4s;
+}
+
+.pipeHit3::after {
+  animation-delay: 3.6s;
+}
+
+@keyframes kHit {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  10%,
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+
+.pipeName {
+  font-size: 0.98rem;
+  font-weight: 500;
+}
+
+.pipeSub {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.pipeLog {
+  list-style: none;
+  margin: 34px 0 0;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.pipeLog li {
+  display: flex;
+  gap: 14px;
+  padding: 4px 0;
+  animation: kLine 6s ease both;
+}
+
+.pipeLogWho {
+  flex: 0 0 64px;
+  color: var(--text-muted);
+}
+
+.pipeLog .pipeLine1 {
+  animation-delay: 0.9s;
+  animation-duration: 5.1s;
+}
+
+.pipeLog .pipeLine2 {
+  animation-delay: 2.4s;
+  animation-duration: 3.6s;
+}
+
+.pipeLog .pipeLine3 {
+  animation-delay: 3.6s;
+  animation-duration: 2.4s;
+}
+
+@keyframes kLine {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  6%,
+  92% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.pipeInfo {
+  margin-top: 22px;
+  padding: 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.pipeInfoHead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.pipeInfoTitle {
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.pipeInfo p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.96rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 680px) {
+  .pipeNode {
+    width: 64px;
+  }
+
+  .pipeDot {
+    width: 42px;
+    height: 42px;
+  }
+
+  .pipeTrack {
+    margin-top: 21px;
+  }
+
+  .pipeSub {
+    display: none;
+  }
+
+  .pipeName {
+    font-size: 0.86rem;
+  }
+
+  .pipeLog {
+    font-size: 0.74rem;
+  }
+
+  .pipeLogWho {
+    flex-basis: 52px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pipePacket,
+  .pipeDot::after {
+    display: none;
+  }
+
+  .pipeLog li {
+    animation: none;
+  }
+}
