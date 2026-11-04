@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { motion, useScroll, useTransform, useMotionValue, useSpring, type MotionValue } from "framer-motion";
 import {
   ArrowUpRight,
@@ -23,6 +24,11 @@ import {
   MapTrifold,
   TelegramLogo,
 } from "@phosphor-icons/react";
+
+import type { ShowcaseCase } from "./DeviceShowcase";
+
+// three.js — отдельным чанком и только когда блок рядом с экраном
+const DeviceShowcase = dynamic(() => import("./DeviceShowcase"), { ssr: false });
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 const SPRING = { type: "spring", stiffness: 140, damping: 18 } as const;
@@ -312,6 +318,86 @@ function LeadForm() {
 
 function Wrap({ children, className }: { children: ReactNode; className?: string }) {
   return <div className={`mx-auto w-full max-w-6xl px-5 sm:px-8 ${className ?? ""}`}>{children}</div>;
+}
+
+/* ── витрина проектов: ноутбук и телефон в 3D, на экранах — вид сайтов (без ссылок) ── */
+const SHOWCASE: (ShowcaseCase & { name: string; kind: string })[] = [
+  { key: "gtm", name: "GTM", kind: "Мем-лендинг: 3D-мир на three.js" },
+  { key: "trick", name: "Trick or Exploit", kind: "Сайт-история на three.js, 9 глав" },
+  { key: "vildan", name: "Вильдан Миннибаев", kind: "Лендинг ведущего мероприятий" },
+  { key: "decoy", name: "DECOY", kind: "Веб-приложение: 3D-сцена и живые данные" },
+  { key: "doomsday", name: "$TICK · 85 SECONDS", kind: "Сайт-мир в пиксель-арте", phoneLandscape: true },
+];
+const SHOWCASE_NEXT_S = 9; // автопереход к следующему проекту
+
+function WorksShowcase() {
+  const box = useRef<HTMLDivElement>(null);
+  const [near, setNear] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [active, setActive] = useState(0);
+  const [ready, setReady] = useState(false);
+  const [hold, setHold] = useState(0); // выбрали руками — автопереход ждёт
+
+  useEffect(() => {
+    const node = box.current;
+    if (!node) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) setNear(true);
+        setVisible(e.intersectionRatio > 0.2);
+      },
+      { rootMargin: "600px 0px", threshold: [0, 0.2] },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!visible || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const t = window.setTimeout(() => setActive((a) => (a + 1) % SHOWCASE.length), (SHOWCASE_NEXT_S + hold) * 1000);
+    return () => window.clearTimeout(t);
+  }, [visible, active, hold]);
+
+  const pick = (i: number) => {
+    setActive(i);
+    setHold(12);
+  };
+
+  return (
+    <div className="mt-10 grid grid-cols-1 gap-6 lg:mt-12 lg:grid-cols-[1.45fr_0.55fr] lg:items-center lg:gap-10">
+      <div ref={box} className="relative aspect-[4/3] w-full sm:aspect-[16/10]">
+        {!ready ? (
+          // постер до three.js (и навсегда, если WebGL нет)
+          <div className="absolute inset-[8%_10%_14%] overflow-hidden rounded-[1rem] border border-white/10 bg-black/40">
+            <Image src={`/showcase/${SHOWCASE[active].key}-desk-0.webp`} alt="" fill sizes="(min-width: 1024px) 640px, 90vw" className="object-cover" />
+          </div>
+        ) : null}
+        {near ? <DeviceShowcase cases={SHOWCASE} active={active} onReady={() => setReady(true)} /> : null}
+      </div>
+      <ol className="flex flex-col gap-1.5">
+        {SHOWCASE.map((c, i) => (
+          <li key={c.key}>
+            <button
+              type="button"
+              onClick={() => pick(i)}
+              aria-pressed={i === active}
+              className={`group flex w-full items-baseline gap-3 rounded-2xl px-4 py-3 text-left transition-colors duration-300 ${
+                i === active ? "bg-white/[0.06] ring-1 ring-accent/30" : "hover:bg-white/[0.03]"
+              }`}
+            >
+              <span className={`font-mono text-[11px] tabular-nums ${i === active ? "text-accent" : "text-muted-foreground"}`}>
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span className="min-w-0">
+                <span className="block text-[1rem] font-semibold">{c.name}</span>
+                <span className="mt-0.5 block text-[0.85rem] leading-snug text-muted-foreground">{c.kind}</span>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
 }
 
 /* ── live mini-site in the hero phone: real markup, not a picture ──
@@ -910,6 +996,17 @@ export default function SitePresentationLanding() {
               </Reveal>
             </div>
           </div>
+        </Wrap>
+      </section>
+
+      {/* ── SHOWCASE: реальные проекты в 3D ── */}
+      <section id="showcase" className="py-20 md:py-28 lg:pl-20">
+        <Wrap>
+          <Reveal><Eyebrow>Уже собрал</Eyebrow></Reveal>
+          <Reveal delay={0.05}>
+            <h2 className="mt-6 max-w-2xl text-[clamp(1.8rem,3.8vw,2.9rem)] font-bold leading-[1.06] tracking-[-0.02em]">От лендинга до сайта-игры.</h2>
+          </Reveal>
+          <WorksShowcase />
         </Wrap>
       </section>
 
