@@ -128,9 +128,13 @@ const solutions = [
 export default function InkSwarmLanding() {
   const hotspotsRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
-  const backdropRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  const flowRef = useRef<HTMLDivElement>(null);
+  const layerRef = useRef<HTMLDivElement>(null);
+  const nodeRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [panel, setPanel] = useState<Panel>(null);
+  const [activeNode, setActiveNode] = useState(1);
   const [hover, setHover] = useState<"left" | "right" | null>(null);
 
   useEffect(() => {
@@ -147,8 +151,9 @@ export default function InkSwarmLanding() {
           hotspotsRef.current.classList.toggle(styles.hotspotsOff, ho <= 0.05);
         }
         if (hintRef.current) hintRef.current.style.opacity = String(clamp01(1 - y / (vh * 0.16)));
-        if (backdropRef.current) backdropRef.current.style.opacity = String(clamp01(1 - (y - vh * 0.5) / (vh * 0.55)));
-        if (headerRef.current) headerRef.current.classList.toggle(styles.headerHero, y < vh * 0.5);
+        // шапка тёмная, пока светлый лист контента не доехал до неё
+        const sheetTop = mainRef.current ? mainRef.current.getBoundingClientRect().top : 0;
+        if (headerRef.current) headerRef.current.classList.toggle(styles.headerHero, sheetTop > 64);
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -187,8 +192,16 @@ export default function InkSwarmLanding() {
 
   return (
     <>
-      <div className={styles.heroBackdrop} ref={backdropRef} aria-hidden="true" />
-      <Swarm hovered={hover} dispersed={panel !== null} />
+      <div className={styles.heroBackdrop} aria-hidden="true" />
+      <Swarm
+        hovered={hover}
+        dispersed={panel !== null}
+        flowRef={flowRef}
+        layerRef={layerRef}
+        nodeRefs={nodeRefs}
+        activeNode={activeNode}
+      />
+      <Pipeline layerRef={layerRef} nodeRefs={nodeRefs} active={activeNode} onActive={setActiveNode} />
 
       <header className={styles.header} ref={headerRef}>
         <div className={styles.headerInner}>
@@ -238,21 +251,11 @@ export default function InkSwarmLanding() {
         </div>
       </div>
 
-      <main className={styles.content}>
-        <div className={styles.wrap}>
-          <section className={styles.section} id="flow">
-            <div className={styles.label}>Как это работает</div>
-            <h2 className={styles.contactLead}>Заявка проходит путь сама.</h2>
-            <p className={styles.contactText}>
-              Клиент пишет, ИИ отвечает и оформляет заявку, CRM её хранит, вам приходит готовое. Нажми на узел —
-              покажу, что он делает.
-            </p>
-            <Pipeline />
-            <div className={styles.contactLinks}>
-              <a href="#demo">Проверить на демо-боте ↓</a>
-            </div>
-          </section>
+      {/* сцена схемы: высота задаёт, сколько прокрутки она держится на экране */}
+      <div className={styles.flowSpacer} id="flow" ref={flowRef} />
 
+      <main className={styles.content} ref={mainRef}>
+        <div className={styles.wrap}>
           <section className={styles.section} id="works">
             <div className={styles.label}>Работы</div>
             <p className={styles.worksLine}>

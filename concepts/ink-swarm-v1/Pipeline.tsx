@@ -1,36 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, type MutableRefObject, type RefObject } from "react";
 import styles from "./ink-swarm.module.css";
 
-/* Живая схема автоматизации: один цикл = одна заявка проходит Клиент → ИИ → CRM → Вы.
-   Пакеты и вспышки узлов — CSS-анимации с общим периодом 6 с, сценарий журнала
-   меняется по событию конца цикла первого пакета, поэтому журнал и пакеты не расходятся. */
+/* HTML-слой 3D-схемы Клиент → ИИ → CRM → Вы. Узлы и пакеты рисует Swarm (three.js), он же двигает
+   кнопки узлов за проекцией 3D-узлов и проявляет слой по прокрутке. Здесь — подписи, журнал заявки
+   и описание выбранного узла. Пакеты и строки журнала идут по общим часам PIPE, поэтому не расходятся. */
 
-const NODES = [
+export const PIPE = {
+  T: 6, // цикл одной заявки, с
+  seg: [
+    [0, 0.9],
+    [1.5, 2.4],
+    [2.7, 3.6],
+  ] as const, // пакет бежит по связи k
+  hit: [0, 0.9, 2.4, 3.6] as const, // пакет у узла k — вспышка и строка журнала
+  fade: 5.5, // журнал гаснет перед новым циклом
+};
+export const pipeClock = () => performance.now() / 1000;
+
+export const NODES = [
   {
-    key: "client",
     name: "Клиент",
     sub: "Telegram · WhatsApp · VK",
     title: "Пишет как удобно",
     text: "Текстом или голосовым, ночью или в выходной. Не нужно звонить и ждать, пока ответит администратор.",
   },
   {
-    key: "ai",
     name: "ИИ",
     sub: "по вашей базе знаний",
     title: "Понимает и отвечает",
     text: "Разбирает, чего хочет человек: записаться, перенести, узнать цену. Отвечает по прайсу и расписанию бизнеса, а не из головы нейросети, и сам записывает на свободное время.",
   },
   {
-    key: "crm",
     name: "CRM",
     sub: "Bitrix24 · amo · таблица",
     title: "Заявка оформлена сама",
     text: "Имя, контакт, суть и оценка теплоты лида ложатся в CRM или таблицу. Данные никто не переносит руками, ничего не теряется.",
   },
   {
-    key: "owner",
     name: "Вы",
     sub: "или менеджер",
     title: "Получаете готовое",
@@ -44,13 +52,13 @@ const SCENARIOS = [
     "«Можно к стоматологу на завтра?»",
     "свободно 15:00 и 17:30 — записал на 15:00",
     "запись: завтра 15:00, осмотр",
-    "новая запись, напоминание клиенту уйдёт само",
+    "новая запись, напоминание уйдёт само",
   ],
   [
     "«Сколько стоит чистка зубов?»",
     "3 500 ₽ по прайсу, предложил время",
-    "лид: интерес — чистка, тёплый 72/100",
-    "тёплый лид, ответ клиенту уже отправлен",
+    "лид: чистка, тёплый 72/100",
+    "тёплый лид, клиенту уже ответили",
   ],
   [
     "«Позовите администратора»",
@@ -60,55 +68,73 @@ const SCENARIOS = [
   ],
 ];
 
-export default function Pipeline() {
-  const [active, setActive] = useState(1);
-  const [cycle, setCycle] = useState(0);
-  const lines = SCENARIOS[cycle % SCENARIOS.length];
+type Props = {
+  layerRef: RefObject<HTMLDivElement | null>;
+  nodeRefs: MutableRefObject<(HTMLButtonElement | null)[]>;
+  active: number;
+  onActive: (i: number) => void;
+};
+
+export default function Pipeline({ layerRef, nodeRefs, active, onActive }: Props) {
+  const [tick, setTick] = useState({ cycle: 0, step: 4 });
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; // журнал стоит целиком
+    const id = window.setInterval(() => {
+      const t = pipeClock();
+      const ph = t % PIPE.T;
+      const cycle = Math.floor(t / PIPE.T);
+      const step = ph >= PIPE.fade ? 0 : PIPE.hit.filter((h) => ph >= h).length;
+      setTick((p) => (p.cycle === cycle && p.step === step ? p : { cycle, step }));
+    }, 100);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const lines = SCENARIOS[tick.cycle % SCENARIOS.length];
   const node = NODES[active];
 
   return (
-    <div className={styles.pipe}>
-      <div className={styles.pipeRow}>
-        {NODES.map((n, i) => (
-          <div className={styles.pipeCell} key={n.key}>
-            {i > 0 ? (
-              <span className={styles.pipeTrack} aria-hidden="true">
-                <span
-                  className={`${styles.pipePacket} ${styles[`pipeSeg${i}`]} ${i > 1 ? styles.pipeLead : ""}`}
-                  onAnimationIteration={i === 1 ? () => setCycle((c) => c + 1) : undefined}
-                />
-              </span>
-            ) : null}
-            <button
-              type="button"
-              className={`${styles.pipeNode} ${active === i ? styles.pipeNodeOn : ""}`}
-              onClick={() => setActive(i)}
-              aria-pressed={active === i}
-            >
-              <span className={`${styles.pipeDot} ${styles[`pipeHit${i}`]}`}>{String(i + 1).padStart(2, "0")}</span>
-              <span className={styles.pipeName}>{n.name}</span>
-              <span className={styles.pipeSub}>{n.sub}</span>
-            </button>
-          </div>
-        ))}
+    <div className={styles.flowLayer} ref={layerRef}>
+      <div className={styles.flowHead}>
+        <div className={styles.flowLabel}>Как это работает</div>
+        <h2 className={styles.flowTitle}>Заявка проходит путь сама.</h2>
+        <p className={styles.flowText}>
+          Клиент пишет, ИИ отвечает и оформляет заявку, CRM её хранит, вам приходит готовое. Нажми на узел — покажу,
+          что он делает.
+        </p>
       </div>
 
-      {/* key={cycle} перезапускает CSS-задержки строк вместе с новым циклом пакетов */}
-      <ol className={styles.pipeLog} key={cycle} aria-live="off">
-        {lines.map((l, i) => (
-          <li key={i} className={styles[`pipeLine${i}`]}>
-            <span className={styles.pipeLogWho}>{NODES[i].name}</span>
-            <span>{l}</span>
-          </li>
-        ))}
-      </ol>
+      {NODES.map((n, i) => (
+        <button
+          type="button"
+          key={n.name}
+          ref={(el) => {
+            nodeRefs.current[i] = el;
+          }}
+          className={`${styles.flowNode} ${active === i ? styles.flowNodeOn : ""}`}
+          onClick={() => onActive(i)}
+          aria-pressed={active === i}
+        >
+          <span className={styles.flowHit} aria-hidden="true" />
+          <span className={styles.flowMeta}>
+            <span className={styles.flowName}>{n.name}</span>
+            <span className={styles.flowSub}>{n.sub}</span>
+            <span className={`${styles.flowLine} ${tick.step > i ? styles.flowLineOn : ""}`} aria-hidden="true">
+              {lines[i]}
+            </span>
+          </span>
+        </button>
+      ))}
 
-      <div className={styles.pipeInfo}>
-        <div className={styles.pipeInfoHead}>
-          <span className={styles.demoNum}>{String(active + 1).padStart(2, "0")}</span>
-          <span className={styles.pipeInfoTitle}>{node.title}</span>
+      <div className={styles.flowInfo}>
+        <div className={styles.flowInfoHead}>
+          <span className={styles.flowNum}>{String(active + 1).padStart(2, "0")}</span>
+          <span className={styles.flowInfoTitle}>{node.title}</span>
         </div>
         <p>{node.text}</p>
+        <a className={styles.flowCta} href="#demo">
+          Проверить на демо-боте ↓
+        </a>
       </div>
     </div>
   );

@@ -205,7 +205,12 @@
 /* ── Content ── */
 .content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  /* светлый лист наезжает на тёмную 3D-сцену */
+  background: var(--bg);
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -24px 80px rgba(0, 0, 0, 0.45);
+  padding-top: 32px;
 }
 
 .wrap {
@@ -672,315 +677,245 @@
 
 /* (workflow / before-after block removed) */
 
-/* ── Pipeline: живая схема Клиент → ИИ → CRM → Вы (цикл 6 с, см. Pipeline.tsx) ── */
-.pipe {
-  margin: 8px 0 26px;
+/* ── 3D-схема Клиент → ИИ → CRM → Вы: HTML-слой поверх сцены Swarm (см. Pipeline.tsx) ── */
+.flowSpacer {
+  height: 260vh;
 }
 
-.pipeRow {
-  display: flex;
-  align-items: flex-start;
-}
-
-.pipeCell {
-  display: flex;
-  align-items: flex-start;
-  flex: 1;
-}
-
-.pipeCell:first-child {
-  flex: 0 0 auto;
-}
-
-.pipeTrack {
-  position: relative;
-  flex: 1;
-  height: 1px;
-  margin-top: 26px;
-  background: var(--border);
-}
-
-.pipePacket {
-  position: absolute;
-  inset: -3px 0 auto 0;
-  height: 7px;
-  opacity: 0;
+.flowLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
   pointer-events: none;
-  /* хвост кометы: прозрачное тело, у правого края — цвет пакета */
-  background: linear-gradient(90deg, transparent calc(100% - 46px), rgba(31, 168, 201, 0.45)) center / 100% 1px no-repeat;
-  animation: kSeg 6s linear infinite both;
+  opacity: 0;
+  visibility: hidden;
+  color: #eef3f4;
 }
 
-.pipePacket::after {
-  content: "";
+.flowHead {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 96px 24px 0;
+}
+
+.flowLabel {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(238, 243, 244, 0.5);
+  margin-bottom: 14px;
+}
+
+.flowTitle {
+  font-size: clamp(1.5rem, 3.6vw, 2.1rem);
+  line-height: 1.2;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+}
+
+.flowText {
+  max-width: 52ch;
+  margin: 0;
+  line-height: 1.6;
+  color: rgba(238, 243, 244, 0.66);
+}
+
+/* кнопка-узел: якорь в центре 3D-узла, Swarm задаёт transform и радиус --r */
+.flowNode {
   position: absolute;
-  right: -3px;
+  left: 0;
   top: 0;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #1fa8c9;
-  box-shadow: 0 0 10px rgba(31, 168, 201, 0.7);
-}
-
-.pipeLead {
-  background-image: linear-gradient(90deg, transparent calc(100% - 46px), rgba(25, 169, 113, 0.45));
-}
-
-.pipeLead::after {
-  background: #19a971;
-  box-shadow: 0 0 10px rgba(25, 169, 113, 0.7);
-}
-
-.pipeSeg2 {
-  animation-delay: 1.5s;
-}
-
-.pipeSeg3 {
-  animation-delay: 2.7s;
-}
-
-@keyframes kSeg {
-  0% {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  2% {
-    opacity: 1;
-  }
-  15% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  17%,
-  100% {
-    transform: translateX(0);
-    opacity: 0;
-  }
-}
-
-.pipeNode {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  width: 116px;
+  width: 0;
+  height: 0;
   padding: 0;
-  background: none;
   border: 0;
+  background: none;
   color: inherit;
   font: inherit;
   cursor: pointer;
-  text-align: center;
+  pointer-events: auto;
+  will-change: transform;
+  --r: 60px;
 }
 
-.pipeDot {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
+.flowHit {
+  position: absolute;
+  left: calc(var(--r) * -1);
+  top: calc(var(--r) * -1);
+  width: calc(var(--r) * 2);
+  height: calc(var(--r) * 2);
   border-radius: 50%;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.16s ease;
+  border: 1px solid rgba(238, 243, 244, 0.08);
+  transition: border-color 0.2s ease, transform 0.16s ease;
 }
 
-.pipeNode:hover .pipeDot {
-  border-color: var(--text);
+.flowNode:hover .flowHit {
+  border-color: rgba(238, 243, 244, 0.28);
 }
 
-.pipeNode:active .pipeDot {
-  transform: scale(0.96);
+.flowNode:active .flowHit {
+  transform: scale(0.97);
 }
 
-.pipeNode:focus-visible {
+.flowNode:focus-visible {
   outline: none;
 }
 
-.pipeNode:focus-visible .pipeDot {
-  outline: 2px solid var(--text);
-  outline-offset: 3px;
+.flowNode:focus-visible .flowHit {
+  outline: 2px solid #7af0e4;
+  outline-offset: 4px;
 }
 
-.pipeNodeOn .pipeDot {
-  background: var(--text);
-  border-color: var(--text);
+.flowNodeOn .flowHit {
+  border-color: rgba(122, 240, 228, 0.5);
+}
+
+.flowMeta {
+  position: absolute;
+  top: calc(var(--r) * 1.12 + 14px);
+  left: 0;
+  width: 230px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.flowName {
+  font-size: 1.02rem;
+  font-weight: 500;
+  color: rgba(238, 243, 244, 0.82);
+  transition: color 0.2s ease;
+}
+
+.flowNodeOn .flowName {
   color: #fff;
 }
 
-/* вспышка узла, когда до него доходит пакет */
-.pipeDot::after {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: 50%;
-  border: 1px solid #19a971;
-  opacity: 0;
-  animation: kHit 6s ease-out infinite;
-}
-
-.pipeHit0::after {
-  border-color: #1fa8c9;
-}
-
-.pipeHit1::after {
-  animation-delay: 0.9s;
-}
-
-.pipeHit2::after {
-  animation-delay: 2.4s;
-}
-
-.pipeHit3::after {
-  animation-delay: 3.6s;
-}
-
-@keyframes kHit {
-  0% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  10%,
-  100% {
-    transform: scale(1.7);
-    opacity: 0;
-  }
-}
-
-.pipeName {
-  font-size: 0.98rem;
-  font-weight: 500;
-}
-
-.pipeSub {
+.flowSub {
   font-family: var(--font-mono);
   font-size: 0.64rem;
-  letter-spacing: 0.03em;
-  color: var(--text-muted);
-  line-height: 1.4;
+  letter-spacing: 0.04em;
+  color: rgba(238, 243, 244, 0.45);
 }
 
-.pipeLog {
-  list-style: none;
-  margin: 34px 0 0;
-  padding: 16px 0 0;
-  border-top: 1px solid var(--border);
+.flowLine {
+  margin-top: 6px;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
-  line-height: 1.5;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: #9ff3e6;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
-.pipeLog li {
-  display: flex;
-  gap: 14px;
-  padding: 4px 0;
-  animation: kLine 6s ease both;
+.flowLineOn {
+  opacity: 1;
+  transform: none;
 }
 
-.pipeLogWho {
-  flex: 0 0 64px;
-  color: var(--text-muted);
+.flowInfo {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  width: min(580px, calc(100% - 32px));
+  transform: translateX(-50%);
+  padding: 16px 20px 14px;
+  border-radius: 16px;
+  background: rgba(12, 14, 19, 0.6);
+  border: 1px solid rgba(238, 243, 244, 0.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  pointer-events: auto;
 }
 
-.pipeLog .pipeLine1 {
-  animation-delay: 0.9s;
-  animation-duration: 5.1s;
-}
-
-.pipeLog .pipeLine2 {
-  animation-delay: 2.4s;
-  animation-duration: 3.6s;
-}
-
-.pipeLog .pipeLine3 {
-  animation-delay: 3.6s;
-  animation-duration: 2.4s;
-}
-
-@keyframes kLine {
-  0% {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  6%,
-  92% {
-    opacity: 1;
-    transform: none;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-.pipeInfo {
-  margin-top: 22px;
-  padding: 20px 22px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-}
-
-.pipeInfoHead {
+.flowInfoHead {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
-.pipeInfoTitle {
-  font-size: 1.05rem;
+.flowNum {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: rgba(238, 243, 244, 0.45);
+}
+
+.flowInfoTitle {
+  font-size: 1.02rem;
   font-weight: 500;
 }
 
-.pipeInfo p {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 0.96rem;
-  line-height: 1.6;
+.flowInfo p {
+  margin: 0 0 10px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: rgba(238, 243, 244, 0.7);
 }
 
-@media (max-width: 680px) {
-  .pipeNode {
-    width: 64px;
+.flowCta {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: #9ff3e6;
+  border-bottom: 1px solid rgba(159, 243, 230, 0.35);
+  padding-bottom: 1px;
+}
+
+/* портрет (телефон): узлы колонкой слева, подписи справа — как раскладка в Swarm (aspect < 0.9) */
+@media (max-aspect-ratio: 9/10) {
+  .flowSpacer {
+    height: 230vh;
   }
 
-  .pipeDot {
-    width: 42px;
-    height: 42px;
+  .flowHead {
+    padding: 76px 16px 0;
   }
 
-  .pipeTrack {
-    margin-top: 21px;
-  }
-
-  .pipeSub {
+  .flowText {
     display: none;
   }
 
-  .pipeName {
-    font-size: 0.86rem;
+  .flowMeta {
+    top: 0;
+    left: calc(var(--r) * 1.3 + 10px);
+    width: min(230px, 56vw);
+    transform: translateY(-50%);
+    align-items: flex-start;
+    text-align: left;
+    gap: 2px;
   }
 
-  .pipeLog {
-    font-size: 0.74rem;
+  .flowSub {
+    display: none;
   }
 
-  .pipeLogWho {
-    flex-basis: 52px;
+  .flowLine {
+    margin-top: 2px;
+    font-size: 0.68rem;
+  }
+
+  .flowInfo {
+    bottom: 16px;
+    padding: 14px 16px 12px;
+  }
+
+  .flowInfo p {
+    font-size: 0.84rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pipePacket,
-  .pipeDot::after {
-    display: none;
-  }
-
-  .pipeLog li {
-    animation: none;
+  .flowLine {
+    transition: none;
   }
 }
